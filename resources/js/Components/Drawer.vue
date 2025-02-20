@@ -17,7 +17,7 @@
         <!-- Navigation -->
         <nav class="p-4">
             <div
-                v-for="(section, index) in navigationItems"
+                v-for="(section, index) in menus"
                 :key="index"
                 class="mb-4"
             >
@@ -30,7 +30,7 @@
                             <i :class="[
                                         section.icon,
                                         store.compactDrawer ? '' : 'mr-3',
-                                    ]"></i> <span  v-if="!store.compactDrawer">{{ section.label }}</span></span>
+                                    ]"></i> <span  v-if="!store.compactDrawer">{{ section.nomUrl }}</span></span>
                         <i
                             class="fas fa-chevron-down transition-transform"
                             :class="[
@@ -54,11 +54,11 @@
                             "
                             class="mt-2 space-y-2"
                         >
-                            <a
+                            <Link
                                 v-for="(item, itemIndex) in section.items"
                                 :key="itemIndex"
-                                :href="item.href"
-                                :title="item.label"
+                                :href="item.root"
+                                :title="item.nomUrl"
                                 class="flex items-center px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-700 rounded-md transition-colors duration-200"
                                 :class="{ 'justify-center': store.compactDrawer }"
                             >
@@ -68,15 +68,15 @@
                                         store.compactDrawer ? '' : 'mr-3',
                                     ]"
                                 ></i>
-                                <span v-if="!store.compactDrawer">{{ item.label }}</span>
-                            </a>
+                                <span v-if="!store.compactDrawer">{{ item.nomUrl }}</span>
+                            </Link>
                         </div>
                     </Transition>
                 </div>
                 <div v-else>
-                    <a
-                                :href="section.href"
-                                :title="section.label"
+                    <Link
+                                :href="section.root"
+                                :title="section.nomUrl"
                                 class="flex items-center px-4 py-2 text-gray-400 hover:text-white hover:bg-slate-700 rounded-md transition-colors duration-200"
                                 :class="{ 'justify-center': store.compactDrawer }"
                             >
@@ -86,8 +86,8 @@
                                         store.compactDrawer ? '' : 'mr-3',
                                     ]"
                                 ></i>
-                                <span v-if="!store.compactDrawer">{{ section.label }}</span>
-                            </a>
+                                <span v-if="!store.compactDrawer">{{ section.nomUrl }}</span>
+                            </Link>
                 </div>
             </div>
         </nav>
@@ -98,28 +98,11 @@
 import { ref, onUnmounted, watch ,onMounted} from "vue";
 import {useStore} from '@/Store/Store'
 import "@fortawesome/fontawesome-free/css/all.min.css";
+import { Link } from '@inertiajs/vue3'
 
-const navigationItems = [
-    { label: "Admin", href: "#", icon: "fas fa-tachometer-alt" },
-    { label: "Entreprise", href: "#", icon: "fas fa-building" },
-    { label: "Staff", href: "#", icon: "fas fa-users" },
-    { label: "Min", href: "#", icon: "fas fa-compress" },
-    { label: "Fixed", href: "#", icon: "fas fa-thumbtack" },
+const menus = ref([])
 
-    {
-        label: "Demos 2",
-        icon: "fa-solid fa-users-gear",
-        items: [
-            { label: "Button", href: "#", icon: "fas fa-square" },
-            { label: "Alert", href: "#", icon: "fas fa-bell" },
-            { label: "Models", href: "#", icon: "fas fa-cube" },
-            { label: "Chart", href: "#", icon: "fas fa-chart-bar" },
-            { label: "Forms", href: "#", icon: "fas fa-wpforms" },
-        ],
-    },
-];
-
-const openSections = ref(Array(navigationItems.length).fill(false));
+const openSections = ref(Array(menus.length).fill(false));
 const store = useStore()
 //const isCompact = ref(false);
 
@@ -137,10 +120,25 @@ watch(() => store.compactDrawer, (newValue) => {
     }
 })
 
+
+
 onMounted(() => {
     axios.get('/init')
     .then(response => {
-        console.log(response.data)
+        
+        menus.value = response.data.route.filter(item => item.parent == null)
+        response.data.route.forEach(item => {
+            if(item.parent != null){
+                menus.value.forEach(parent => {
+                    if(parent.IDLien == item.parent){
+                        if(!parent.hasOwnProperty('items')){
+                            parent.items = []
+                        }
+                        parent.items.push(item)
+                    }
+                })
+            }
+        })
     })
     .catch(error => {
         console.log(error)

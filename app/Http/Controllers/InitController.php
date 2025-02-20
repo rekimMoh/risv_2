@@ -18,7 +18,7 @@ class InitController extends Controller
                 ->orderBy('liens.IDLien','ASC')
                 ->get();
         
-         return ['route'=> $route, 'user'=> Auth::user()];
+         return ['route'=> $route];
     }
     public function initUser()
     {
