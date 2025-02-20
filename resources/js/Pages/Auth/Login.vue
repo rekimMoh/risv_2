@@ -1,11 +1,10 @@
 <script setup>
-import { useTheme } from 'vuetify'
-import AuthProvider from '@/views/pages/authentication/AuthProvider.vue'
-import logo from '@images/logo.svg?raw'
-import authV1MaskDark from '@images/pages/auth-v1-mask-dark.png'
-import authV1MaskLight from '@images/pages/auth-v1-mask-light.png'
-import authV1Tree2 from '@images/pages/auth-v1-tree-2.png'
-import authV1Tree from '@images/pages/auth-v1-tree.png'
+import Checkbox from '@/Components/Checkbox.vue';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
+import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import PrimaryButton from '@/Components/PrimaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 defineProps({
@@ -28,124 +27,74 @@ const submit = () => {
         onFinish: () => form.reset('password'),
     });
 };
-const vuetifyTheme = useTheme()
-
-const authThemeMask = computed(() => {
-  return vuetifyTheme.global.name.value === 'light' ? authV1MaskLight : authV1MaskDark
-})
-
-const isPasswordVisible = ref(false)
 </script>
 
 <template>
-  <!-- eslint-disable vue/no-v-html -->
+    <GuestLayout>
+        <Head title="Log in" />
 
-  <div class="auth-wrapper d-flex align-center justify-center pa-4">
-    <Head title="Log in" />
-    <VCard
-      class="auth-card pa-4 pt-7"
-      max-width="448"
-    >
-    <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
+        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
             {{ status }}
         </div>
 
-      <VCardItem class="justify-center">
-        <link
-          to="/"
-          class="d-flex align-center gap-3"
-        >
-          <!-- eslint-disable vue/no-v-html -->
-          <div
-            class="d-flex"
-            v-html="logo"
-          />
-          <h2 class="font-weight-medium text-2xl text-uppercase">
-            Materio
-          </h2>
-        </link>
-      </VCardItem>
+        <form @submit.prevent="submit">
+            <div>
+                <InputLabel for="email" value="Email" />
 
-      <VCardText class="pt-2">
-        <h4 class="text-h4 mb-1">
-          Welcome to Materio! 👋🏻
-        </h4>
-        <p class="mb-0">
-          Please sign-in to your account and start the adventure
-        </p>
-      </VCardText>
+                <TextInput
+                    id="email"
+                    type="email"
+                    class="mt-1 block w-full"
+                    v-model="form.email"
+                    required
+                    autofocus
+                    autocomplete="username"
+                />
 
-      <VCardText>
-        <VForm @submit.prevent="submit">
-          <VRow>
-            <!-- email -->
-            <VCol cols="12">
-              <VTextField
-                v-model="form.email"
-                label="Email"
-                type="email"
-                required
-              />
-            </VCol>
+                <InputError class="mt-2" :message="form.errors.email" />
+            </div>
 
-            <!-- password -->
-            <VCol cols="12">
-              <VTextField
-                v-model="form.password"
-                label="Password"
-                placeholder="············"
-                :type="isPasswordVisible ? 'text' : 'password'"
-                autocomplete="password"
-                :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                @click:append-inner="isPasswordVisible = !isPasswordVisible"
-              />
+            <div class="mt-4">
+                <InputLabel for="password" value="Password" />
 
+                <TextInput
+                    id="password"
+                    type="password"
+                    class="mt-1 block w-full"
+                    v-model="form.password"
+                    required
+                    autocomplete="current-password"
+                />
 
-              <!-- login button -->
-              <VBtn
-                block
-                type="submit"
-                color="primary"
-              >
-                Login
-              </VBtn>
-            </VCol>
+                <InputError class="mt-2" :message="form.errors.password" />
+            </div>
 
-            <!-- create account -->
-            
+            <div class="mt-4 block">
+                <label class="flex items-center">
+                    <Checkbox name="remember" v-model:checked="form.remember" />
+                    <span class="ms-2 text-sm text-gray-600"
+                        >Remember me</span
+                    >
+                </label>
+            </div>
 
-            <!-- auth providers -->
-            <VCol
-              cols="12"
-              class="text-center"
-            >
-              <AuthProvider />
-            </VCol>
-          </VRow>
-        </VForm>
-      </VCardText>
-    </VCard>
+            <div class="mt-4 flex items-center justify-end">
+                <Link
+                    v-if="canResetPassword"
+                    :href="route('password.request')"
+                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                >
+                    Forgot your password?
+                </Link>
 
-    <VImg
-      class="auth-footer-start-tree d-none d-md-block"
-      :src="authV1Tree"
-      :width="250"
-    />
-
-    <VImg
-      :src="authV1Tree2"
-      class="auth-footer-end-tree d-none d-md-block"
-      :width="350"
-    />
-
-    <!-- bg img -->
-    <VImg
-      class="auth-footer-mask d-none d-md-block"
-      :src="authThemeMask"
-    />
-  </div>
+                <PrimaryButton
+                    class="ms-4"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
+                    Log in
+                </PrimaryButton>
+            </div>
+        </form>
+    </GuestLayout>
 </template>
-
-<style lang="scss">
-@use "@core-scss/template/pages/page-auth";
-</style>
