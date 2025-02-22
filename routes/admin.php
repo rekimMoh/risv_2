@@ -1,5 +1,7 @@
 <?php
 use App\Models\Day;
+use App\Models\Hour;
+use Inertia\Inertia;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EtudeController;
@@ -9,7 +11,6 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\PrixExamController;
 use App\Http\Controllers\AntecedentController;
 use App\Http\Controllers\ClasseProduitController;
-use App\Models\Hour;
 
 // route USER
 Route::resource('/user',UserController::class);
@@ -26,6 +27,8 @@ Route::post('/active-cp', [ClasseProduitController::class, 'activeCP']);
 //ROUTE PRODUIT
 
 Route::resource('/produit',ProduitController::class);
+
+Route::get('/admin/produit', [ProduitController::class,'index']);
 Route::post('/active-produit', [ProduitController::class, 'activeProduit']);
 Route::get('/get-cp', [ClasseProduitController::class, 'getCP']);
 

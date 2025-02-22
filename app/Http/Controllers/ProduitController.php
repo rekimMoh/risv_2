@@ -6,6 +6,7 @@ use App\Models\PrixProduit;
 use App\Models\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ProduitController extends Controller
 {
@@ -16,14 +17,12 @@ class ProduitController extends Controller
      */
     public function index()
     {
-        return Produit::leftJoin('classe_produits','produits.class_produit_id','=','classe_produits.IDClasseProduit')
-        ->where(function ($query) {
-            if ($_GET['search'] != '' || $_GET['search'] != null) {
-                $query->where('libelleProduit', 'like', '%' . $_GET['search'] . '%')
-                    ->orWhere('libelleCP', 'like', '%' . $_GET['search'] . '%');
-            }
-        })
-            ->paginate($_GET['nbItem']);
+        $produit =  Produit::leftJoin('classe_produits','produits.class_produit_id','=','classe_produits.IDClasseProduit')
+        ->paginate(10);
+
+        return Inertia::render('Admin/Product',[
+            'produits' => $produit
+        ]);
     }
 
     public function getProduit()
