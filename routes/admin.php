@@ -29,8 +29,8 @@ Route::post('/active-cp', [ClasseProduitController::class, 'activeCP']);
 Route::resource('/produit',ProduitController::class);
 
 Route::get('/admin/produit', [ProduitController::class,'index']);
-Route::post('/active-produit', [ProduitController::class, 'activeProduit']);
-Route::get('/get-cp', [ClasseProduitController::class, 'getCP']);
+Route::post('/active-produit', [ProduitController::class, 'activeProduit'])->name('admin.produit.toggle');
+Route::get('/get-cp', [ClasseProduitController::class, 'getCP'])->name('listClasseProduits');
 
 // ROUTE SERVICE
 

@@ -121,6 +121,8 @@ class ProduitController extends Controller
 
         $produit->etatProduit = $request->etatProduit;
         $produit->save();
+
+        return $produit;
     }
 
     /**
