@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Antecedent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,12 +16,10 @@ class AntecedentController extends Controller
      */
     public function index()
     {
-        return Antecedent::where(function ($query) {
-            if ($_GET['search'] != '' || $_GET['search'] != null) {
-                $query->where('libelleAntecedent', 'like', '%' . $_GET['search'] . '%');
-            }
-        })
-            ->paginate($_GET['nbItem']);
+        $antecedents =  Antecedent::paginate(10);
+        return Inertia::render('Admin/Antecedent', [
+            'antecedents' => $antecedents
+        ]);
     }
 
     public function getAntecedent()
@@ -46,6 +45,9 @@ class AntecedentController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'libelleAntecedent' => 'required|string',
+        ]);
         $Antecedent = new Antecedent();
         $Antecedent->libelleAntecedent = $request->libelleAntecedent;
         $Antecedent->UIAntecedent = Auth::user()->id;
@@ -85,6 +87,9 @@ class AntecedentController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            'libelleAntecedent' => 'required|string',
+        ]);
         $Antecedent = Antecedent::find($id);
         $Antecedent->libelleAntecedent = $request->libelleAntecedent;
         $Antecedent->UIAntecedent = Auth::user()->id;
@@ -100,6 +105,8 @@ class AntecedentController extends Controller
 
         $Antecedent->etatAntecedent = $request->etatAntecedent;
         $Antecedent->save();
+
+        return $Antecedent;
     }
 
     /**

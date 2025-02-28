@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ClasseProduit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ClasseProduitController extends Controller
 {
@@ -15,12 +16,11 @@ class ClasseProduitController extends Controller
      */
     public function index()
     {
-        return ClasseProduit::where(function ($query) {
-            if ($_GET['search'] != '' || $_GET['search'] != null) {
-                $query->where('libelleCP', 'like', '%' . $_GET['search'] . '%');
-            }
-        })
-            ->paginate($_GET['nbItem']);
+        $cp = ClasseProduit::paginate(10);
+
+            return Inertia::render('Admin/ClassProduct', [
+                'classProduits' => $cp
+            ]);
     }
 
     public function getCP()
@@ -46,6 +46,10 @@ class ClasseProduitController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'libelleCP' => 'required|string',
+        ]);
+
         $cp = new ClasseProduit();
         $cp->libelleCP = $request->libelleCP;
         $cp->UICP = Auth::user()->id;
@@ -85,6 +89,10 @@ class ClasseProduitController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            'libelleCP' => 'required|string',
+        ]);
+
         $cp = ClasseProduit::find($id);
         $cp->libelleCP = $request->libelleCP;
         $cp->UICP = Auth::user()->id;
@@ -94,12 +102,14 @@ class ClasseProduitController extends Controller
         return $cp;
     }
 
-    public function activeCRM(Request $request)
+    public function activeCP(Request $request)
     {
         $ClasseProduit = ClasseProduit::find($request->id);
 
         $ClasseProduit->etatCP = $request->etatCP;
         $ClasseProduit->save();
+
+        return $ClasseProduit;
     }
 
     /**

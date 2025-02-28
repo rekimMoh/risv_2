@@ -69,6 +69,7 @@ class ProduitController extends Controller
 
         return Produit::leftJoin('classe_produits', 'produits.class_produit_id', '=', 'classe_produits.IDClasseProduit')
             ->where('IDProduit', $produit->IDProduit)
+            ->where('etatCP', 1)
             ->first();
     }
 

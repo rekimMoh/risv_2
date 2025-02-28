@@ -22,7 +22,7 @@ Route::post('/active-compte-user', [UserController::class, 'activeCompte']);
 
 //route classe produit
 Route::resource('/cp',ClasseProduitController::class);
-Route::post('/active-cp', [ClasseProduitController::class, 'activeCP']);
+Route::post('/active-cp', [ClasseProduitController::class, 'activeCP'])->name('admin.classProduit.toggle');
 
 //ROUTE PRODUIT
 
@@ -52,7 +52,7 @@ Route::post('/active-etude', [EtudeController::class, 'activeEtude']);
 // ROUTE Antecedent
 
 Route::resource('/antecedent',AntecedentController::class);
-Route::post('/active-antecedent', [AntecedentController::class, 'activeAntecedent']);
+Route::post('/active-antecedent', [AntecedentController::class, 'activeAntecedent'])->name('admin.antecedent.toggle');
 
 // ROUTE Prix Examen
 
