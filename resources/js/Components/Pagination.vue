@@ -13,7 +13,7 @@
                 <Link v-else :href="link.url"
                 class=" mr-0.5 mb-1  min-w-9">
                     <div class="mb-1 px-2.5 py-2 bg-white text-sm shadow rounded-full hover:bg-blue-500 hover:text-white text-center"
-                    v-html="link.label" :class="{ 'bg-blue-700 text-white': link.active }">
+                    v-html="link.label" :class="{ 'bg-blue-600 text-white': link.active }">
                 </div></Link>
             </template>
         </div>

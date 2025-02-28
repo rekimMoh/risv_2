@@ -17,17 +17,17 @@ class ProduitController extends Controller
      */
     public function index()
     {
-        $produit =  Produit::leftJoin('classe_produits','produits.class_produit_id','=','classe_produits.IDClasseProduit')
-        ->paginate(10);
+        $produit =  Produit::leftJoin('classe_produits', 'produits.class_produit_id', '=', 'classe_produits.IDClasseProduit')
+            ->paginate(10);
 
-        return Inertia::render('Admin/Product',[
+        return Inertia::render('Admin/Product', [
             'produits' => $produit
         ]);
     }
 
     public function getProduit()
     {
-        return Produit::where('etatProduit',1)->get();
+        return Produit::where('etatProduit', 1)->get();
     }
 
     /**
@@ -48,6 +48,11 @@ class ProduitController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'libelleProduit' => 'required|string',
+            'class_produit_id' => 'required|integer',
+            'prix_afficher' => 'required|numeric',
+        ]);
         $produit = new Produit();
         $produit->libelleProduit = $request->libelleProduit;
         $produit->etatProduit = 1;
@@ -55,14 +60,16 @@ class ProduitController extends Controller
         $produit->class_produit_id = $request->class_produit_id;
         $produit->prix_afficher = $request->prix_afficher;
 
-        if($produit->save())
-        {
+        if ($produit->save()) {
             $prix = new PrixProduit();
             $prix->prixP = $request->prix_afficher;
             $prix->produit_id = $produit->IDProduit;
             $prix->save();
         }
 
+        return Produit::leftJoin('classe_produits', 'produits.class_produit_id', '=', 'classe_produits.IDClasseProduit')
+            ->where('IDProduit', $produit->IDProduit)
+            ->first();
     }
 
     /**
@@ -96,7 +103,12 @@ class ProduitController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $lastPrix = PrixProduit::where('produit_id',$id)->orderBy('IDPrixProduit','desc')->first();
+        $validatedData = $request->validate([
+            'libelleProduit' => 'required|string',
+            'class_produit_id' => 'required|integer',
+            'prix_afficher' => 'required|numeric',
+        ]);
+        $lastPrix = PrixProduit::where('produit_id', $id)->orderBy('IDPrixProduit', 'desc')->first();
 
         $produit = Produit::find($id);
         $produit->libelleProduit = $request->libelleProduit;
@@ -105,19 +117,20 @@ class ProduitController extends Controller
         $produit->class_produit_id = $request->class_produit_id;
         $produit->prix_afficher = $request->prix_afficher;
 
-        if($produit->save() && $lastPrix->prixP != $request->prix_afficher)
-        {
+        if ($produit->save() && $lastPrix->prixP != $request->prix_afficher) {
             $prix = new PrixProduit();
             $prix->prixP = $request->prix_afficher;
             $prix->produit_id = $id;
             $prix->save();
         }
-
+        return Produit::leftJoin('classe_produits', 'produits.class_produit_id', '=', 'classe_produits.IDClasseProduit')
+            ->where('IDProduit', $produit->IDProduit)
+            ->first();
     }
 
     public function activeProduit(Request $request)
     {
-        $produit= Produit::find($request->id);
+        $produit = Produit::find($request->id);
 
         $produit->etatProduit = $request->etatProduit;
         $produit->save();
@@ -133,6 +146,6 @@ class ProduitController extends Controller
      */
     public function destroy($id)
     {
-        Produit::where('IDProduit' , $id)->delete();
+        Produit::where('IDProduit', $id)->delete();
     }
 }
