@@ -35,7 +35,7 @@ Route::get('/get-cp', [ClasseProduitController::class, 'getCP'])->name('listClas
 // ROUTE SERVICE
 
 Route::resource('/service',ServiceController::class);
-Route::post('/active-service', [ServiceController::class, 'activeService']);
+Route::post('/active-service', [ServiceController::class, 'activeService'])->name('admin.service.toggle');
 
 // ROUTE SHIFT
 

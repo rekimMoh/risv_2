@@ -123,9 +123,10 @@ watch(() => store.compactDrawer, (newValue) => {
 
 
 onMounted(() => {
+if(localStorage.getItem('menus') == null){
     axios.get('/init')
     .then(response => {
-        
+        localStorage.setItem('menus', JSON.stringify(response.data.route))
         menus.value = response.data.route.filter(item => item.parent == null)
         response.data.route.forEach(item => {
             if(item.parent != null){
@@ -143,6 +144,22 @@ onMounted(() => {
     .catch(error => {
         console.log(error)
     })
+}else{
+    let mm = JSON.parse(localStorage.getItem('menus'))
+    menus.value = mm.filter(item => item.parent == null)
+        mm.forEach(item => {
+            if(item.parent != null){
+                menus.value.forEach(parent => {
+                    if(parent.IDLien == item.parent){
+                        if(!parent.hasOwnProperty('items')){
+                            parent.items = []
+                        }
+                        parent.items.push(item)
+                    }
+                })
+            }
+        })
+}
 }),
 
 onUnmounted(() => {

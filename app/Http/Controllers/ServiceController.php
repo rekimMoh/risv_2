@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,12 +16,11 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        return Service::where(function ($query) {
-            if ($_GET['search'] != '' || $_GET['search'] != null) {
-                $query->where('libelleService', 'like', '%' . $_GET['search'] . '%');
-            }
-        })
-            ->paginate($_GET['nbItem']);
+        $Services = Service::paginate(10);
+        return Inertia::render('Admin/Service', [
+            'Services' => $Services
+        ]);
+        
     }
 
     public function getService()
@@ -46,6 +46,10 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'libelleService' => 'required|string',
+        ]);
+
         $Service = new Service();
         $Service->libelleService = $request->libelleService;
         $Service->UIService = Auth::user()->id;
@@ -85,6 +89,9 @@ class ServiceController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            'libelleService' => 'required|string',
+        ]);
         $Service = Service::find($id);
         $Service->libelleService = $request->libelleService;
         $Service->UIService = Auth::user()->id;
@@ -100,6 +107,8 @@ class ServiceController extends Controller
 
         $Service->etatService = $request->etatService;
         $Service->save();
+
+        return $Service;
     }
 
     /**
