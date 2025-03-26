@@ -9,7 +9,7 @@
                         placeholder="Rechercher..." />
                     <button
                         class="bg-emerald-600 text-white px-4 py-2 ml-4 hover:bg-emerald-500 rounded-lg transition-all"
-                        @click="openModal">
+                        @click="add">
                         Ajouter un Antecedent
                     </button>
                 </div>
@@ -102,8 +102,9 @@ const antecedent = ref({ libelleAntecedent: ''})
 
 const search = ref("");
 const modal = ref(false);
-const openModal = () => {
+const add = () => {
     modal.value = true;
+    antecedent.value = { libelleAntecedent: '' }
 };
 
 const destroy = async (id) => {
@@ -117,7 +118,7 @@ const destroy = async (id) => {
 
 const edit = (prod) => {
     antecedent.value = prod
-    openModal()
+    modal.value = true
 }
 
 const toggleClassProduct = (index) => {

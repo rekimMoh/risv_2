@@ -10,4 +10,9 @@ class PrixExam extends Model
     use HasFactory;
 
     protected $primaryKey  = 'IDPrixExam';
+
+    public function etude()
+    {
+        return $this->belongsTo(Etude::class, 'etude_id', 'IDEtude');
+    }
 }

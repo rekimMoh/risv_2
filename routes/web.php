@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use App\Http\Controllers\InitController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EtudeController;
+use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\CaisseController;
 use App\Http\Controllers\ExamenController;
 use App\Http\Controllers\WilayaController;
@@ -59,6 +60,8 @@ Route::resource('/paiement',CaisseController::class);
     Route::get('/detailCaisse/{IDCaisse}',[CaisseController::class,'detailCaisse']);
     Route::post('/set-versement',[CaisseController::class,'setVersement']);
     Route::put('/update-patient/{id}',[PatientController::class,'update']);
+
+    Route::get('/get-shift', [ShiftController::class, 'getShift']);
     
     
     // Route Auto Search

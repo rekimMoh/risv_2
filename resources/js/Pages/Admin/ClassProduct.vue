@@ -1,7 +1,7 @@
 <template>
 
     <MyLayout>
-        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg w-full col-span-4">
+        <div class="bg-white overflow-x-auto shadow-sm sm:rounded-lg w-full col-span-4">
             <div class="p-6 bg-white border-b border-gray-200">
                 <h1 class="text-3xl font-bold mb-4">Liste des classes produit</h1>
                 <div class="flex justify-between mb-4">
@@ -9,7 +9,7 @@
                         placeholder="Rechercher..." />
                     <button
                         class="bg-emerald-600 text-white px-4 py-2 ml-4 hover:bg-emerald-500 rounded-lg transition-all"
-                        @click="openModal">
+                        @click="add">
                         Ajouter une classe Produit
                     </button>
                 </div>
@@ -103,7 +103,8 @@ const classProduit = ref({ libelleCP: ''})
 
 const search = ref("");
 const modal = ref(false);
-const openModal = () => {
+const add = () => {
+    classProduit.value = { libelleCP: '' }
     modal.value = true;
 };
 
@@ -118,7 +119,7 @@ const destroy = async (id) => {
 
 const edit = (prod) => {
     classProduit.value = prod
-    openModal()
+    modal.value = true;
 }
 
 const toggleClassProduct = (index) => {

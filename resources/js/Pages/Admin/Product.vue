@@ -9,7 +9,7 @@
                         placeholder="Rechercher..." />
                     <button
                         class="bg-emerald-600 text-white px-4 py-2 ml-4 hover:bg-emerald-500 rounded-lg transition-all"
-                        @click="openModal">
+                        @click="add">
                         Ajouter un Produit
                     </button>
                 </div>
@@ -106,8 +106,9 @@ const produit = ref({ libelleProduit: '', IDClasseProduit: '', prix_afficher: ''
 
 const search = ref("");
 const modal = ref(false);
-const openModal = () => {
+const add = () => {
     modal.value = true;
+    produit.value = { libelleProduit: '', class_produit_id: '', prix_afficher: '' }
 };
 
 const destroy = async (id) => {
@@ -121,7 +122,7 @@ const destroy = async (id) => {
 
 const edit = (prod) => {
     produit.value = prod
-    openModal()
+    modal.value = true
 }
 
 const toggleProduct = (index) => {

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\PrixExamController;
 use App\Models\PrixExam;
 use App\Models\Service;
+use Inertia\Inertia;
 
 class EtudeController extends Controller
 {
@@ -18,14 +19,11 @@ class EtudeController extends Controller
      */
     public function index()
     {
-        return Etude::leftJoin('services', 'etudes.service_id', '=', 'services.IDService')
-            ->where(function ($query) {
-                if ($_GET['search'] != '' || $_GET['search'] != null) {
-                    $query->where('libelleEtude', 'like', '%' . $_GET['search'] . '%');
-                    $query->orWhere('libelleService', 'like', '%' . $_GET['search'] . '%');
-                }
-            })
-            ->paginate($_GET['nbItem']);
+        $etude = Etude::leftJoin('services', 'etudes.service_id', '=', 'services.IDService')
+            ->with('PrixExams')
+            ->paginate(10);
+
+        return Inertia::render('Admin/Etude', ['Etudes' => $etude]);
     }
 
     public function getEtude()
@@ -36,10 +34,9 @@ class EtudeController extends Controller
     public function getEtudeByService($id)
     {
         return Etude::where([
-                ['etudes.service_id', $id],
-                ['etudes.etatEtude', 1]
-            ])->get();
-            
+            ['etudes.service_id', $id],
+            ['etudes.etatEtude', 1]
+        ])->get();
     }
 
     /**
@@ -67,20 +64,22 @@ class EtudeController extends Controller
         $Etude->service_id = $request->service_id;
         $Etude->save();
 
-        foreach ($request->montantByShift as $prix) {
-
-            $request->etude_id = $Etude->IDEtude;
-            $request->montantPrixExam = $prix['montantPrixExam'];
-            $request->shift_id = $prix['IDShift'];
-
-            $prix = new PrixExamController();
-
-            $prix->store($request);
+        foreach ($request->prix_exams as $prix) {
+            $prixEtude = new PrixExam();
+            $prixEtude->etude_id = $Etude->IDEtude;
+            $prixEtude->montantPrixExam = $prix['montantPrixExam'];
+            $prixEtude->shift_id = $prix['shift_id'];
+            $prixEtude->UIPrixExam = Auth::user()->id;
+            $prixEtude->etatPrixExam = true;
+            $prixEtude->save();
         }
 
 
 
-        return $Etude;
+        return Etude::leftJoin('services', 'etudes.service_id', '=', 'services.IDService')
+            ->with('PrixExams')
+            ->where('IDEtude', '=', $Etude->IDEtude)
+            ->first();
     }
 
     /**
@@ -103,10 +102,10 @@ class EtudeController extends Controller
     public function edit($id)
     {
         $Etude = Etude::where('IDEtude', '=', $id)->first();
-        $montantByShift  = PrixExam::leftJoin('shifts','shifts.IDShift','=','prix_exams.shift_id')
-        ->where('etude_id',$id)->get();
+        $montantByShift  = PrixExam::leftJoin('shifts', 'shifts.IDShift', '=', 'prix_exams.shift_id')
+            ->where('etude_id', $id)->get();
 
-        return ['montantByShift'=> $montantByShift, 'etude' =>$Etude];
+        return ['montantByShift' => $montantByShift, 'etude' => $Etude];
     }
 
     /**
@@ -125,18 +124,31 @@ class EtudeController extends Controller
         //$Etude->etatEtude = 1;
         $Etude->save();
 
-        foreach ($request->montantByShift as $prix) {
-
-            $request->etude_id = $Etude->IDEtude;
-            $request->montantPrixExam = $prix['montantPrixExam'];
-            $request->shift_id = $prix['IDShift'];
-
-            $prix = new PrixExamController();
-
-            $prix->updateByEtude($request);
+        foreach ($request->prix_exams as $prix) {
+            if ($prix['IDPrixExam']) {
+                $prixEtude = PrixExam::find($prix['IDPrixExam']);
+                $prixEtude->montantPrixExam = $prix['montantPrixExam'];
+                $prixEtude->shift_id = $prix['shift_id'];
+                $prixEtude->UIPrixExam = Auth::user()->id;
+                //$prixEtude->etatPrixExam = true;
+                $prixEtude->save();
+            } else {
+                $prixEtude = new PrixExam();
+                $prixEtude->etude_id = $Etude->IDEtude;
+                $prixEtude->montantPrixExam = $prix['montantPrixExam'];
+                $prixEtude->shift_id = $prix['shift_id'];
+                $prixEtude->UIPrixExam = Auth::user()->id;
+            $prixEtude->etatPrixExam = true;
+                $prixEtude->save();
+            }
         }
 
-        return $Etude;
+
+
+        return Etude::leftJoin('services', 'etudes.service_id', '=', 'services.IDService')
+            ->with('PrixExams')
+            ->where('IDEtude', '=', $Etude->IDEtude)
+            ->first();
     }
 
     public function activeEtude(Request $request)
@@ -145,6 +157,8 @@ class EtudeController extends Controller
 
         $Etude->etatEtude = $request->etatEtude;
         $Etude->save();
+
+        return $Etude;
     }
 
     /**
@@ -155,7 +169,7 @@ class EtudeController extends Controller
      */
     public function destroy($id)
     {
-        PrixExam::where('etude_id',$id)->delete();
+        PrixExam::where('etude_id', $id)->delete();
         Etude::where('IDEtude', $id)->delete();
     }
 
@@ -167,16 +181,16 @@ class EtudeController extends Controller
      * @return erray [$service, $etude]
      */
 
-     function serviceHasEtude() {
-        
+    function serviceHasEtude()
+    {
+
         $etudes = Etude::all();
 
-        $services = Service::join('etudes','etudes.service_id', 'services.IDService')
-                        ->select('services.IDService','services.libelleService')
-                        ->groupBy('services.IDService','services.libelleService')
-                        ->get();
+        $services = Service::join('etudes', 'etudes.service_id', 'services.IDService')
+            ->select('services.IDService', 'services.libelleService')
+            ->groupBy('services.IDService', 'services.libelleService')
+            ->get();
 
-        return ['services'=>$services, 'etudes'=> $etudes];
-
-     }
+        return ['services' => $services, 'etudes' => $etudes];
+    }
 }

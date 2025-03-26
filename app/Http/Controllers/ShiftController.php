@@ -6,6 +6,7 @@ use App\Models\DayHourShift;
 use App\Models\Shift;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ShiftController extends Controller
 {
@@ -16,17 +17,13 @@ class ShiftController extends Controller
      */
     public function index()
     {
-        return Shift::where(function ($query) {
-            if ($_GET['search'] != '' || $_GET['search'] != null) {
-                $query->where('libelleShift', 'like', '%' . $_GET['search'] . '%');
-            }
-        })
-            ->paginate($_GET['nbItem']);
+        $shift = Shift::paginate(10);
+        return Inertia::render('Admin/Shift', ['Shifts' => $shift]);
     }
 
     public function getShift()
     {
-        return Shift::where('etatShift','=',1)->get();
+        return Shift::where('etatShift', '=', 1)->get();
     }
 
     /**
@@ -47,6 +44,11 @@ class ShiftController extends Controller
      */
     public function store(Request $request)
     {
+        $validatedData = $request->validate([
+            'libelleShift' => 'required|string',
+            'colorShift' => 'required|string',
+        ]);
+
         $Shift = new Shift();
         $Shift->libelleShift = $request->libelleShift;
         $Shift->colorShift = $request->colorShift;
@@ -54,9 +56,9 @@ class ShiftController extends Controller
         $Shift->etatShift = true;
         $Shift->save();
 
-        foreach($request->plan as $plan){
-            foreach($plan as $item){
-                if($item['isSelected']){
+        foreach ($request->plan as $plan) {
+            foreach ($plan as $item) {
+                if ($item['isSelected']) {
 
                     $dayHourShift = new DayHourShift();
                     $dayHourShift->day_id = $item['day'];
@@ -64,7 +66,6 @@ class ShiftController extends Controller
                     $dayHourShift->hour_id = $item['hour'];
                     $dayHourShift->save();
                 }
-
             }
         }
 
@@ -102,13 +103,31 @@ class ShiftController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $validatedData = $request->validate([
+            'libelleShift' => 'required|string',
+            'colorShift' => 'required|string',
+        ]);
         $Shift = Shift::find($id);
         $Shift->libelleShift = $request->libelleShift;
-        $Shift->start = $request->start;
-        $Shift->end = $request->end;
+        $Shift->colorShift = $request->colorShift;
         //$Shift->UIShift = Auth::user()->id;
         //$Shift->etatShift = 1;
         $Shift->save();
+
+        DayHourShift::where('shift_id', $id)->delete(); // delete all day hour shift for this shift
+
+        foreach ($request->plan as $plan) {
+            foreach ($plan as $item) {
+                if ($item['isSelected']) {
+
+                    $dayHourShift = new DayHourShift();
+                    $dayHourShift->day_id = $item['day'];
+                    $dayHourShift->shift_id = $Shift->IDShift;
+                    $dayHourShift->hour_id = $item['hour'];
+                    $dayHourShift->save();
+                }
+            }
+        }
 
         return $Shift;
     }
@@ -119,6 +138,8 @@ class ShiftController extends Controller
 
         $Shift->etatShift = $request->etatShift;
         $Shift->save();
+
+        return $Shift;
     }
 
     /**
@@ -129,7 +150,7 @@ class ShiftController extends Controller
      */
     public function destroy($id)
     {
-        Shift::where('IDShift' , $id)->delete();
+        Shift::where('IDShift', $id)->delete();
     }
 
     /**
@@ -137,10 +158,17 @@ class ShiftController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     function getShiftActive(){
+    function getShiftActive()
+    {
 
         return Shift::where('etatShift', 1)->get();
-        
-     }
-}
+    }
 
+    function getDayHourShift($id)
+    {
+
+        return DayHourShift::where('shift_id', $id)->get();
+    }
+
+
+}

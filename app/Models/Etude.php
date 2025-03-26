@@ -9,4 +9,9 @@ class Etude extends Model
 {
     use HasFactory;
     protected $primaryKey = 'IDEtude';
+
+    public function PrixExams()
+    {
+        return $this->hasMany(PrixExam::class, 'etude_id', 'IDEtude');
+    }
 }
