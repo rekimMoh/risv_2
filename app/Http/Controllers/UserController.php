@@ -10,6 +10,7 @@ use App\Models\LienUser;
 use App\Models\ModePaiement;
 use App\Models\Shift;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
@@ -21,13 +22,13 @@ class UserController extends Controller
     public function index()
     {
 
-        return User::where(function ($query) {
-            if ($_GET['search'] != '' || $_GET['search'] != null) {
-                $query->where('nom', 'like', '%' . $_GET['search'] . '%')
-                    ->orWhere('prenom', 'like', '%' . $_GET['search'] . '%');
-            }
-        })
-            ->paginate($_GET['nbItem']);
+        $users = User::leftJoin('user_metiers', 'users.userMeiter_id', '=', 'user_metiers.IDUserMetier')->paginate(10);
+        //$users = User::paginate(10);
+        //return 'salam';
+
+        return Inertia::render('Admin/User', [
+            'Users' => $users,
+        ]);
     }
 
 
@@ -272,6 +273,7 @@ class UserController extends Controller
 
         $user->is_active = $request->is_active;
         $user->save();
+        return $user;
     }
 
     /**
