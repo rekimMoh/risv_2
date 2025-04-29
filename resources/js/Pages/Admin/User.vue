@@ -10,7 +10,7 @@
                     <button
                         class="bg-emerald-600 text-white px-4 py-2 ml-4 hover:bg-emerald-500 rounded-lg transition-all"
                         @click="add">
-                        Ajouter un User
+                        Ajouter un User 
                     </button>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                             <td class="py-3 px-6">{{ User.id }}</td>
                             <td class="py-3 px-6">{{ User.nom }}</td>
                             <td class="py-3 px-6">{{ User.prenom }}</td>
-                            <td class="py-3 px-6">{{ User.typeU }}</td>
+                            <td class="py-3 px-6">{{ User.user_metier?.typeU || 'N/A' }}</td>
                             <td class="py-3 px-6 w-44">
                                 <button @click="toggleUser(index)"
                                     :class="{ 'bg-green-500': User.is_active == 1, 'bg-red-500': User.is_active == 0 }"
@@ -83,6 +83,21 @@ import UserForm from '@/Pages/Admin/UserForm.vue'
 const props = defineProps({
     Users: {
         type: Object,
+        required: true
+    },
+
+    lien: {
+        type: Array,
+        required: true
+    },
+
+    userMeiter: {
+        type: Array,
+        required: true
+    },
+
+    services: {
+        type: Array,
         required: true
     }
 })

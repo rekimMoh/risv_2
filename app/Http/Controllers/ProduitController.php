@@ -64,6 +64,8 @@ class ProduitController extends Controller
             $prix = new PrixProduit();
             $prix->prixP = $request->prix_afficher;
             $prix->produit_id = $produit->IDProduit;
+            $prix->UIPrixP =  Auth::user()->id;
+
             $prix->save();
         }
 
@@ -122,6 +124,7 @@ class ProduitController extends Controller
             $prix = new PrixProduit();
             $prix->prixP = $request->prix_afficher;
             $prix->produit_id = $id;
+            $prix->UIPrixP =  Auth::user()->id;
             $prix->save();
         }
         return Produit::leftJoin('classe_produits', 'produits.class_produit_id', '=', 'classe_produits.IDClasseProduit')

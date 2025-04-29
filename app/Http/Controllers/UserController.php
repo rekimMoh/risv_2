@@ -9,6 +9,7 @@ use App\Models\Service;
 use App\Models\LienUser;
 use App\Models\ModePaiement;
 use App\Models\Shift;
+use App\Models\UserMetier;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -22,12 +23,17 @@ class UserController extends Controller
     public function index()
     {
 
-        $users = User::leftJoin('user_metiers', 'users.userMeiter_id', '=', 'user_metiers.IDUserMetier')->paginate(10);
-        //$users = User::paginate(10);
-        //return 'salam';
+        $users = User::with('userMetier')->with('LienUsers')->with('ModePaiements')->paginate(10);
+        
+        $lien = Lien::all();
+        $userMeiter = UserMetier::all();
+        $services = Service::with('etudes')->get();
 
         return Inertia::render('Admin/User', [
             'Users' => $users,
+            'lien' => $lien,
+            'userMeiter' => $userMeiter,
+            'services' => $services,
         ]);
     }
 
