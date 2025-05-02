@@ -12,6 +12,7 @@
                         @click="add">
                         Ajouter un User 
                     </button>
+                    
                 </div>
             </div>
             <div class="p-6">
@@ -32,7 +33,7 @@
                             class="hover:bg-gray-100 border-b">
                             <td class="py-3 px-6">{{ User.id }}</td>
                             <td class="py-3 px-6">{{ User.nom }}</td>
-                            <td class="py-3 px-6">{{ User.prenom }}</td>
+                            <td class="py-3 px-6">{{ User.prenom }} / {{ User.mode_paiements.length }}</td>
                             <td class="py-3 px-6">{{ User.user_metier?.typeU || 'N/A' }}</td>
                             <td class="py-3 px-6 w-44">
                                 <button @click="toggleUser(index)"
@@ -41,6 +42,8 @@
                                     <span v-if="User.is_active == 1">Désactiver</span>
                                     <span v-else>Activer</span>
                                 </button>
+
+                                
                             </td>
 
                             <td class="py-3 px-6 w-44">
@@ -66,7 +69,7 @@
         </div>
 
         <Modal :show="modal" @close="modal = false" maxWidth="lg">
-            <UserForm :User="User" @closeModal="modal = false" @addRaw="pushRaw" @updateRaw="updateRaw" />
+            <UserForm :User="User" :liens="liens" :medcins="medcins" :userMeiters="userMeiters" :services="services" @closeModal="modal = false" @addRaw="pushRaw" @updateRaw="updateRaw" />
         </Modal>
     </MyLayout>
 </template>
@@ -86,17 +89,21 @@ const props = defineProps({
         required: true
     },
 
-    lien: {
+    liens: {
         type: Array,
         required: true
     },
 
-    userMeiter: {
+    userMeiters: {
         type: Array,
         required: true
     },
 
     services: {
+        type: Array,
+        required: true
+    },
+    medcins: {
         type: Array,
         required: true
     }

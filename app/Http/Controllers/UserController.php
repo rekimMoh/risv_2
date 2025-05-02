@@ -25,15 +25,17 @@ class UserController extends Controller
 
         $users = User::with('userMetier')->with('LienUsers')->with('ModePaiements')->paginate(10);
         
-        $lien = Lien::all();
-        $userMeiter = UserMetier::all();
+        $liens = Lien::all();
+        $userMeiters = UserMetier::all();
         $services = Service::with('etudes')->get();
+        $medcins = User::where('userMeiter_id', 2)->whereNull('signature_medcin')->get();   
 
         return Inertia::render('Admin/User', [
             'Users' => $users,
-            'lien' => $lien,
-            'userMeiter' => $userMeiter,
+            'liens' => $liens,
+            'userMeiters' => $userMeiters,
             'services' => $services,
+            'medcins' => $medcins,
         ]);
     }
 
