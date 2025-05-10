@@ -8,6 +8,7 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
         './resources/js/**/*.vue',
+        './resources/**/*.js',
     ],
 
     theme: {
@@ -18,5 +19,16 @@ export default {
         },
     },
 
-    plugins: [forms],
+    //plugins: [forms],
+    plugins: [require('daisyui')],
+    daisyui: {
+        themes: [
+          'light',
+          'dark',
+          {
+            ssp: {}, // On le déclare vide car les variables sont en CSS
+          },
+        ]
+      }
+
 };
