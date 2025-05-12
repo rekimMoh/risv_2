@@ -27,7 +27,7 @@ class UserController extends Controller
         
         $liens = Lien::all();
         $userMeiters = UserMetier::all();
-        $services = Service::with('etudes')->get();
+        $services = Service::with('etudes')->with('etudes.shifts')->get();
         $medcins = User::where('userMeiter_id', 2)->whereNull('signature_medcin')->get();   
 
         return Inertia::render('Admin/User', [

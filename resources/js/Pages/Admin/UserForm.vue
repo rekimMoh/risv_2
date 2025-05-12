@@ -82,12 +82,15 @@
                 </div>   
 
                 <div id="accordion-collapse" class="mt-10 w-full block " data-accordion="collapse">
-                    <div v-for="service in services" :key="service.IDService">
-                        <div id="accordion-collapse-heading-1" class="grid grid-cols-1 md:grid-cols-4 w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0 border-gray-200 rounded-t-xl focus:ring-4 focus:ring-gray-200gap-3">
-                            <div class="col-span-3 flex items-center">
-                                {{ service.libelleService }} : <input class="input" type="text">  
-                                <input type="checkbox" 
-                        class=" toggle"> Pourcentage
+                    <div v-for="(service,indexService) in services" :key="service.IDService">
+                        <div id="accordion-collapse-heading-1" class=" w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0
+                         border-gray-200  focus:ring-4 focus:ring-gray-200 gap-3 flex justify-between"
+                         :class="[indexService == 0 ? 'rounded-t-xl' : 'rounded-none', indexService == services.length - 1 ? 'rounded-b-xl' : 'rounded-none']"
+                         >
+                            <div class="col-span-3 flex items-center w-4/5">
+                                <span class="mr-4">{{ service.libelleService }} :</span> <input class="input" type="text">  
+                                <input type="checkbox"  
+                        class=" toggle ml-4 toggle toggle-sm toggle-neutral"> Pourcentage
                             </div>
                             
                             <button type="button" @click="openAccordion = !openAccordion"
@@ -102,12 +105,15 @@
                                 </svg>
                             </button>
                         </div>
-                        <div id="accordion-collapse-body-1" :class="openAccordion ? 'open' : 'hidden'"
+                        <div id="accordion-collapse-body-1 "  class="border border-t-0 border-gray-200 p-5 " :class="openAccordion ? 'open' : 'hidden'"
                             aria-labelledby="accordion-collapse-heading-1">
-                           <div v-for="etude in service.etudes" :key="etude.IDEtude">
-                                {{ etude.libelleEtude }} : <input type="text" class="input" > 
+                           <div v-for="etude in service.etudes" :key="etude.IDEtude" class=" mb-4 flex justify-start gap-4">
+                                <span class="mr-4"> {{ etude.libelleEtude }} :</span> 
+                                <div v-for="shift in etude.shifts" :key="shift.IDShift" class="">
+                                    <input type="text" class="input" :placeholder="shift.libelleShift"> 
+                                </div>
                                 <input type="checkbox"
-                                    class=" ml-4 toggle toggle-sm toggle-neutral"> Pourcentage
+                                    class=" ml-4 toggle toggle-sm toggle-neutral "> Pourcentage
 
                            </div>
                         </div>
