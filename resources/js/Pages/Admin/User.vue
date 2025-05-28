@@ -70,7 +70,7 @@
         </div>
 
         <Modal :show="modal" @close="modal = false" maxWidth="lg">
-            <UserForm :User="User" :liens="liens" :medcins="medcins" :userMeiters="userMeiters" :services="services" @closeModal="modal = false" @addRaw="pushRaw" @updateRaw="updateRaw" />
+            <UserForm :User="User" :liens="liens" :medcins="medcins" :shifts="shifts" :userMeiters="userMeiters" :services="services" @closeModal="modal = false" @addRaw="pushRaw" @updateRaw="updateRaw" />
         </Modal>
     </MyLayout>
 </template>
@@ -105,6 +105,10 @@ const props = defineProps({
         required: true
     },
     medcins: {
+        type: Array,
+        required: true
+    },
+    shifts: {
         type: Array,
         required: true
     }

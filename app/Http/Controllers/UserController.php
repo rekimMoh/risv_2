@@ -29,13 +29,15 @@ class UserController extends Controller
         $userMeiters = UserMetier::all();
         $services = Service::with('etudes')->with('etudes.shifts')->get();
         $medcins = User::where('userMeiter_id', 2)->whereNull('signature_medcin')->get();   
-
+        $shifts = Shift::all();
+        
         return Inertia::render('Admin/User', [
             'Users' => $users,
             'liens' => $liens,
             'userMeiters' => $userMeiters,
             'services' => $services,
             'medcins' => $medcins,
+            'shifts' => $shifts,
         ]);
     }
 

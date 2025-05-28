@@ -78,34 +78,32 @@
                     <input type="checkbox" name="" id="paieTacheActif" v-model="paieTacheActif"
                         :value="User.mode_paiements.length > 0" :checked="User.mode_paiements.length > 0"
                         class=" ml-4 toggle toggle- toggle-lg">
-                    {{ paieTacheActif }}
                 </div>   
 
-                <div id="accordion-collapse" class="mt-10 w-full block " data-accordion="collapse">
+                <div id="accordion-collapse" class="mt-10 w-full block " data-accordion="collapse" v-if="paieTacheActif">
                     <div v-for="(service,indexService) in services" :key="service.IDService">
                         <div id="accordion-collapse-heading-1" class=" w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0
                          border-gray-200  focus:ring-4 focus:ring-gray-200 gap-3 flex justify-between"
-                         :class="[indexService == 0 ? 'rounded-t-xl' : 'rounded-none', indexService == services.length - 1 ? 'rounded-b-xl' : 'rounded-none']"
+                         :class="[indexService == 0 ? 'rounded-t-xl' : 'rounded-none', indexService == services.length - 1 ? 'border-b-2' : 'rounded-none']"
                          >
                             <div class="col-span-3 flex items-center w-4/5">
-                                <span class="mr-4">{{ service.libelleService }} :</span> <input class="input" type="text">  
+                                <span class="mr-4">{{ service.libelleService }} :</span> 
+                                <div v-for="shift in shifts" :key="shift.IDShift" class="mr-4">
+                                    <input class="input" type="text" :placeholder="shift.libelleShift">   
+                                </div>
                                 <input type="checkbox"  
-                        class=" toggle ml-4 toggle toggle-sm toggle-neutral"> Pourcentage
+                        class=" toggle ml-4 toggle-sm toggle-neutral"> Pourcentage
                             </div>
                             
-                            <button type="button" @click="openAccordion = !openAccordion"
-                                class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                            <button type="button" @click="openAccordion[indexService] = !openAccordion[indexService]"
+                                class="btn btn-ghost btn-sm"
                                 data-accordion-target="#accordion-collapse-body-1" aria-expanded="true"
                                 aria-controls="accordion-collapse-body-1">
                                 <span>Afficher</span>
-                                <svg data-accordion-icon class="w-3 h-3 rotate-180 shrink-0" aria-hidden="true"
-                                    xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2" d="M9 5 5 1 1 5" />
-                                </svg>
+                                
                             </button>
                         </div>
-                        <div id="accordion-collapse-body-1 "  class="border border-t-0 border-gray-200 p-5 " :class="openAccordion ? 'open' : 'hidden'"
+                        <div id="accordion-collapse-body-1 "  class="border border-t-0 border-gray-200 p-5 " :class="openAccordion[indexService] ? 'open' : 'hidden'"
                             aria-labelledby="accordion-collapse-heading-1">
                            <div v-for="etude in service.etudes" :key="etude.IDEtude" class=" mb-4 flex justify-start gap-4">
                                 <span class="mr-4"> {{ etude.libelleEtude }} :</span> 
@@ -157,10 +155,14 @@ const props = defineProps({
         type: Array,
         required: true
     },
+    shifts: {
+        type: Array,
+        required: true
+    },
 })
 
 const paieTacheActif = ref()
-const openAccordion = ref(false)
+const openAccordion = ref([])
 const form = ref({
     id: null,
     nom: '',
@@ -170,6 +172,15 @@ const form = ref({
     password_confirmation: '',
     userMeiter_id: null,
     signature_medcin: null,
+})
+
+onMounted(() => {
+    if (props.services.length > 0) {
+        props.services.forEach(e => {
+            openAccordion.value.push(false);
+        })
+        
+    }
 })
 
 const lienUser = ref([])
