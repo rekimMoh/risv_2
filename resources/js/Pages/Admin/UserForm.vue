@@ -78,7 +78,7 @@
                     <input type="checkbox" name="" id="paieTacheActif" v-model="paieTacheActif"
                         :value="User.mode_paiements.length > 0" :checked="User.mode_paiements.length > 0"
                         class=" ml-4 toggle toggle- toggle-lg">
-                </div>   
+                </div>
 
                 <div id="accordion-collapse" class="mt-10 w-full block " data-accordion="collapse" v-if="paieTacheActif">
                     <div v-for="(service,indexService) in services" :key="service.IDService">
@@ -160,7 +160,13 @@ const props = defineProps({
         required: true
     },
 })
-
+onMounted(() => {
+    if(props.User.mode_paiements.length > 0) {
+        paieTacheActif.value = true
+    } else {
+        paieTacheActif.value = false
+    }
+})
 const paieTacheActif = ref()
 const openAccordion = ref([])
 const form = ref({
@@ -174,14 +180,7 @@ const form = ref({
     signature_medcin: null,
 })
 
-onMounted(() => {
-    if (props.services.length > 0) {
-        props.services.forEach(e => {
-            openAccordion.value.push(false);
-        })
-        
-    }
-})
+
 
 const lienUser = ref([])
 
@@ -197,13 +196,7 @@ const errors = ref({})
 
 const emit = defineEmits(['closeModal', 'addRaw', 'updateRaw'])
 const indexBtnAccordion = ref([])
-onMounted(() => {
-    form.value = { ...props.user }
-    
-      props.services.forEach(e => {
-        indexBtnAccordion.value.push(false);
-    })
-})
+
 
 const submit = async () => {
     try {
