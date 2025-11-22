@@ -81,21 +81,23 @@
                 </div>
 
                 <div id="accordion-collapse" class="mt-10 w-full block " data-accordion="collapse" v-if="paieTacheActif">
-                    <div v-for="(service,indexService) in services" :key="service.IDService">
+                    
+                    <div v-for="(service,indexService) in modePaiement" :key="service.IDService">
                         <div id="accordion-collapse-heading-1" class=" w-full p-5 font-medium rtl:text-right text-gray-500 border border-b-0
                          border-gray-200  focus:ring-4 focus:ring-gray-200 gap-3 flex justify-between"
-                         :class="[indexService == 0 ? 'rounded-t-xl' : 'rounded-none', indexService == services.length - 1 ? 'border-b-2' : 'rounded-none']"
+                         :class="[indexService == 0 ? 'rounded-t-xl' : 'rounded-none', indexService == modePaiement.length - 1 ? 'border-b-2' : 'rounded-none']"
                          >
                             <div class="col-span-3 flex items-center w-4/5">
-                                <span class="mr-4">{{ service.libelleService }} :</span> 
-                                <div v-for="shift in shifts" :key="shift.IDShift" class="mr-4">
-                                    <input class="input" type="text" :placeholder="shift.libelleShift">   
+                                <div class="w-1/5 text-xs">{{ service.libelleService }} :</div> 
+                                <div v-for="shift in service.shifts" :key="shift.IDShift" class="w-28 mr-4">
+                                    <input class="input input-sm" @input="setValueEtude(indexService,shift.IDShift )" type="number" :placeholder="shift.libelleShift" v-model="shift.valueSRV">   
                                 </div>
-                                <input type="checkbox"  
-                        class=" toggle ml-4 toggle-sm toggle-neutral"> Pourcentage
+                                <input type="checkbox" v-model="service.pourcentageSRV" 
+                                @change="service.etudes.forEach(etude => etude.pourcentage = service.pourcentageSRV)"  
+                        class=" toggle ml-4 toggle-sm toggle-neutral mr-4">  {{ service.pourcentageSRV ? '%' : 'DZD' }}
                             </div>
                             
-                            <button type="button" @click="openAccordion[indexService] = !openAccordion[indexService]"
+                            <button type="button"   @click="openAccordion[indexService] = !openAccordion[indexService]"
                                 class="btn btn-ghost btn-sm"
                                 data-accordion-target="#accordion-collapse-body-1" aria-expanded="true"
                                 aria-controls="accordion-collapse-body-1">
@@ -106,12 +108,13 @@
                         <div id="accordion-collapse-body-1 "  class="border border-t-0 border-gray-200 p-5 " :class="openAccordion[indexService] ? 'open' : 'hidden'"
                             aria-labelledby="accordion-collapse-heading-1">
                            <div v-for="etude in service.etudes" :key="etude.IDEtude" class=" mb-4 flex justify-start gap-4">
-                                <span class="mr-4"> {{ etude.libelleEtude }} :</span> 
+                                <div class="w-1/6 text-xs"> {{ etude.libelleEtude }} :</div> 
                                 <div v-for="shift in etude.shifts" :key="shift.IDShift" class="">
-                                    <input type="text" class="input" :placeholder="shift.libelleShift"> 
+                                    <input type="number" class="input input-sm" :placeholder="shift.libelleShift" v-model="shift.value"> 
                                 </div>
                                 <input type="checkbox"
-                                    class=" ml-4 toggle toggle-sm toggle-neutral "> Pourcentage
+                                    v-model="etude.pourcentage"
+                                    class=" mx-4 toggle toggle-sm toggle-neutral "> {{ etude.pourcentage ? '%' : 'DZD' }}
 
                            </div>
                         </div>
@@ -166,8 +169,72 @@ onMounted(() => {
     } else {
         paieTacheActif.value = false
     }
+
+    const modePaiementTemp = props.User.mode_paiements
+
+props.services.forEach((s) => {
+     
+    const service = {
+        IDService: s.IDService,
+        libelleService: s.libelleService,
+        shifts: props.shifts.map(shift => ({
+            IDShift: shift.IDShift,
+            libelleShift: shift.libelleShift,
+            valueSRV: null,
+        })),
+        pourcentageSRV: false,
+        etudes: s.etudes.map(etude => ({
+            IDEtude: etude.IDEtude,
+            libelleEtude: etude.libelleEtude,
+            shifts: props.shifts.map(shift => ({
+                IDShift: shift.IDShift,
+            libelleShift: shift.libelleShift,
+                value: null,
+            }),
+        ),
+        pourcentage: false
+        }))
+    }
+    console.log(service)
+
+    const modePaiementExiste = modePaiementTemp.filter(mp =>{
+        return mp.service_id === s.IDService
+    });
+    if (modePaiementExiste.length > 0) {
+        
+        service.shifts.forEach(shiftSRV => {
+            const paimentShiftExiste = modePaiementExiste.find(mp => mp.shift_id === shiftSRV.IDShift)
+            if (paimentShiftExiste) {
+                service.pourcentageSRV = paimentShiftExiste.pourcentageSRV === 1
+                shiftSRV.valueSRV = paimentShiftExiste.valueSRV
+            } 
+            
+        })
+
+        service.etudes.forEach(etude => {
+            etude.shifts.forEach(shift => {
+                const paimentShiftExiste = modePaiementExiste.find(mp => mp.shift_id === shift.IDShift && mp.etude_id === etude.IDEtude)
+                if (paimentShiftExiste) {
+                    etude.pourcentage = paimentShiftExiste.pourcentage === 1
+                    shift.value = paimentShiftExiste.value
+                } 
+                 
+            })
+        }) 
+
+    }
+
+    modePaiement.value.push(service)
+
 })
-const paieTacheActif = ref()
+ 
+//
+
+})
+
+const modePaiement = ref([])
+
+const paieTacheActif = ref(null)
 const openAccordion = ref([])
 const form = ref({
     id: null,
@@ -179,6 +246,16 @@ const form = ref({
     userMeiter_id: null,
     signature_medcin: null,
 })
+
+const setValueEtude = (indexService, IDShift) => {
+    modePaiement.value[indexService].etudes.forEach(etude => {
+        etude.shifts.forEach(shift => {
+            if (shift.IDShift === IDShift) {
+                shift.value = modePaiement.value[indexService].shifts.find(s => s.IDShift === IDShift).valueSRV
+            }
+        })
+    })
+}
 
 
 
@@ -199,19 +276,21 @@ const indexBtnAccordion = ref([])
 
 
 const submit = async () => {
-    try {
-        if (form.value.id ) {
-            await axios.put(route('admin.users.update', form.value.id), form.value)
-            emit('updateRaw', form.value)
-        } else {
-            const response = await axios.post(route('admin.users.store'), form.value)
-            emit('addRaw', response.data)
-        }
-        emit('closeModal')
-    } catch (error) {
-        if (error.response.status === 422) {
-            errors.value = error.response.data.errors
-        }
-    }
+    
+    console.log(props.User)
+    // try {
+    //     if (form.value.id ) {
+    //         await axios.put(route('admin.users.update', form.value.id), form.value)
+    //         emit('updateRaw', form.value)
+    //     } else {
+    //         const response = await axios.post(route('admin.users.store'), form.value)
+    //         emit('addRaw', response.data)
+    //     }
+    //     emit('closeModal')
+    // } catch (error) {
+    //     if (error.response.status === 422) {
+    //         errors.value = error.response.data.errors
+    //     }
+    // }
 }
 </script>

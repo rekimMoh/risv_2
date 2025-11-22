@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 
 export const useStore = defineStore("store", {
     state: () => ({
-        compactDrawer: false
+        compactDrawer: false,
     }),
     getters: {
 

@@ -15,7 +15,7 @@ use App\Http\Controllers\ClasseProduitController;
 
 Route::middleware('auth')->group(function () {
     // route USER
-    Route::resource('/user', UserController::class);
+    Route::resource('/users', UserController::class);
     Route::post('/active-compte-user', [UserController::class, 'activeCompte'])->name('admin.User.toggle');
 
 
