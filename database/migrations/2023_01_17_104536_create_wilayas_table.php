@@ -16,7 +16,9 @@ return new class extends Migration
         Schema::create('wilayas', function (Blueprint $table) {
             $table->id('IDWilaya');
             $table->string('wilaya')->nullable();
+            $table->string('code',3)->nullable();
             $table->timestamps();
+
         });
     }
 

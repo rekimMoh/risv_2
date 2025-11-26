@@ -110,7 +110,7 @@ const add = () => {
 
 const destroy = async (id) => {
     if (confirm('Voulez-vous supprimer cette classe produit ?')) {
-        await axios.delete(`/cp/${id}`)
+        await axios.delete(`/class-produit/${id}`)
         props.classProduits.data = props.classProduits.data.filter(classProduit => classProduit.IDClasseProduit !== id)
         props.classProduits.total--
         props.classProduits.to--

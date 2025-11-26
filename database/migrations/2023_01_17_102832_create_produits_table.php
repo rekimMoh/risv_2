@@ -18,7 +18,9 @@ return new class extends Migration
             $table->string('libelleProduit')->nullable();
             $table->integer('UIProduit')->nullable();
             $table->integer('etatProduit')->nullable();
+            $table->decimal('prix_afficher', 10, 2)->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

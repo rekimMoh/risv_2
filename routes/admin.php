@@ -23,7 +23,7 @@ Route::middleware('auth')->group(function () {
     //Route::resource('/compte-rendu',UserController::class);
 
     //route classe produit
-    Route::resource('/cp', ClasseProduitController::class);
+    Route::resource('/class-produit', ClasseProduitController::class);
     Route::post('/active-cp', [ClasseProduitController::class, 'activeCP'])->name('admin.classProduit.toggle');
 
     //ROUTE PRODUIT

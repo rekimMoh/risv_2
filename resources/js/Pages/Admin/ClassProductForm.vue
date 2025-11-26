@@ -47,10 +47,10 @@
   const submit = async () => {
     try {
       if (props.classProduit.IDClasseProduit) {
-        const response = await axios.put(`/cp/${props.classProduit.IDClasseProduit}`, props.classProduit)
+        const response = await axios.put(`/class-produit/${props.classProduit.IDClasseProduit}`, props.classProduit)
         emit('updateRaw', response.data);
       } else {
-        const response = await axios.post('/cp', props.classProduit)
+        const response = await axios.post('/class-produit', props.classProduit)
         emit('addRaw', response.data);
       }
       fermerModal()
