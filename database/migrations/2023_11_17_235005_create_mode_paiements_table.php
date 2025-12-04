@@ -16,12 +16,12 @@ return new class extends Migration
         Schema::create('mode_paiements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->references('id');
-            $table->foreignId('etude_id')->constrained('etudes')->references('IDEtude');
-            $table->foreignId('shift_id')->constrained('shifts')->references('IDShift');
-            $table->integer('service_id');
-            $table->integer('pourcentage');
+            $table->foreignId('etude_id')->constrained('etudes')->references('IDEtude')->nullable();
+            $table->foreignId('shift_id')->constrained('shifts')->references('IDShift')->nullable();
+            $table->integer('service_id')->nullable();
+            $table->integer('pourcentage')->nullable();
             $table->integer('pourcentageSRV')->nullable();
-            $table->integer('value');
+            $table->integer('value')->nullable();
             $table->integer('valueSRV')->nullable();
             $table->timestamps();
         });

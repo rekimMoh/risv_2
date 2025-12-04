@@ -69,6 +69,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
 
+
         $user = new User();
 
         $user->nom  = $request->nom;
@@ -79,7 +80,7 @@ class UserController extends Controller
         $user->signature_medcin  = $request->signature_medcin;
         $user->save();
 
-        foreach ($request->lien as $item) {
+         foreach ($request->lien_users as $item) {
             // LienUser::create(['lien_id'=>$item, 'user_id'=>$user->id ]);
             $LienUser = new LienUser();
 
@@ -89,25 +90,44 @@ class UserController extends Controller
             $LienUser->save();
         }
 
-        foreach ($request->paiements as $service) {
-            foreach ($service['etudes'] as $etude) {
-                foreach ($etude['shifts'] as $index => $shift) {
-                    if ($shift['value'] != null || $shift['value'] != 0) {
-                        $revenu = new ModePaiement();
-                        $revenu->user_id = $user->id;
-                        $revenu->etude_id = $etude['IDEtude'];
-                        $revenu->shift_id = $shift['IDShift'];
-                        $revenu->service_id = $service['IDService'];
-                        $revenu->pourcentage = $etude['pourcentage'];
-                        $revenu->pourcentage = $etude['pourcentage'];
-                        $revenu->pourcentageSRV = $service['pourcentageSRV'];
-                        $revenu->value = $shift['value'];
-                        $revenu->valueSRV = $service['shiftsSRV'][$index]['valueSRV'];
-                        $revenu->save();
+        
+        if(count($request->mode_paiements) > 0){
+            foreach ($request->mode_paiements as $item) {
+
+            foreach($item['shifts'] as  $shift){
+               if($shift['valueSRV'] != 0 && $shift['valueSRV'] != null){
+                 $ModePaiement = new ModePaiement();
+                $ModePaiement->shift_id = $shift['IDShift'];
+                $ModePaiement->user_id = $user->id;
+                $ModePaiement->service_id = $item['IDService'];
+                $ModePaiement->pourcentageSRV = $item['pourcentageSRV'];
+                $ModePaiement->valueSRV = $shift['valueSRV'];
+                $ModePaiement->save();
+               }
+            }
+
+
+            foreach ($item['etudes'] as $etude) {
+
+                foreach($etude['shifts'] as $shiftEtude){
+                    if($shiftEtude['value'] != 0 && $shiftEtude['value'] != null){
+                
+                $ModePaiementEtude = new ModePaiement();
+                $ModePaiementEtude->service_id = $item['IDService'];
+                 $ModePaiementEtude->shift_id = $shiftEtude['IDShift'];
+                  $ModePaiementEtude->user_id = $user->id;
+                $ModePaiementEtude->etude_id = $etude['IDEtude'];
+                $ModePaiementEtude->pourcentage = $etude['pourcentage'];
+                $ModePaiementEtude->value = $shiftEtude['value'];
+                $ModePaiementEtude->save();
                     }
                 }
             }
         }
+        }
+        
+
+       
 
         return $user;
     }
@@ -225,6 +245,9 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
+
+       // return $request;
+
         $user = User::find($id);
 
         $user->nom  = $request->nom;
@@ -240,7 +263,7 @@ class UserController extends Controller
 
         LienUser::where('user_id', $id)->delete();
 
-        foreach ($request->lien as $item) {
+        foreach ($request->lien_users as $item) {
             // LienUser::create(['lien_id'=>$item, 'user_id'=>$user->id ]);
             $LienUser = new LienUser();
 
@@ -250,27 +273,43 @@ class UserController extends Controller
             $LienUser->save();
         }
 
-        ModePaiement::where('user_id',$id)->delete();
+        
 
-        foreach ($request->paiements as $service) {
-            foreach ($service['etudes'] as $etude) {
-                foreach ($etude['shifts'] as $index => $shift) {
-                    if ($shift['value'] != null || $shift['value'] != 0) {
-                        $revenu = new ModePaiement();
-                        $revenu->user_id = $user->id;
-                        $revenu->etude_id = $etude['IDEtude'];
-                        $revenu->shift_id = $shift['IDShift'];
-                        $revenu->service_id = $service['IDService'];
-                        $revenu->pourcentage = $etude['pourcentage'];
-                        $revenu->pourcentage = $etude['pourcentage'];
-                        $revenu->pourcentageSRV = $service['pourcentageSRV'];
-                        $revenu->value = $shift['value'];
-                        $revenu->valueSRV = $service['shiftsSRV'][$index]['valueSRV'];
-                        $revenu->save();
+        ModePaiement::where('user_id',$id)->delete();
+        foreach ($request->mode_paiements as $item) {
+
+            foreach($item['shifts'] as  $shift){
+               if($shift['valueSRV'] != 0 && $shift['valueSRV'] != null){
+                 $ModePaiement = new ModePaiement();
+                $ModePaiement->shift_id = $shift['IDShift'];
+                $ModePaiement->user_id = $user->id;
+                $ModePaiement->service_id = $item['IDService'];
+                $ModePaiement->pourcentageSRV = $item['pourcentageSRV'];
+                $ModePaiement->valueSRV = $shift['valueSRV'];
+                $ModePaiement->save();
+               }
+            }
+
+
+            foreach ($item['etudes'] as $etude) {
+
+                foreach($etude['shifts'] as $shiftEtude){
+                    if($shiftEtude['value'] != 0 && $shiftEtude['value'] != null){
+                
+                $ModePaiementEtude = new ModePaiement();
+                $ModePaiementEtude->service_id = $item['IDService'];
+                 $ModePaiementEtude->shift_id = $shiftEtude['IDShift'];
+                  $ModePaiementEtude->user_id = $user->id;
+                $ModePaiementEtude->etude_id = $etude['IDEtude'];
+                $ModePaiementEtude->pourcentage = $etude['pourcentage'];
+                $ModePaiementEtude->value = $shiftEtude['value'];
+                $ModePaiementEtude->save();
                     }
                 }
             }
         }
+
+        
 
         
 

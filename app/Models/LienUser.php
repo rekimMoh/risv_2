@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class LienUser extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'user_id',
+        'lien_id',
+    ];
 }
