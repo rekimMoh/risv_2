@@ -189,7 +189,7 @@ const validateAndProceed = () => {
                             type="radio"
                             name="sexe"
                             class="radio radio-primary"
-                            value="H"
+                            value="1"
                             v-model="patient.sexeP"
                         />
                         <span class="label-text">Masculin</span>
@@ -198,8 +198,8 @@ const validateAndProceed = () => {
                         <input
                             type="radio"
                             name="sexe"
-                            class="radio radio-pink-500"
-                            value="F"
+                            class="radio radio-secondary"
+                            value="2"
                             v-model="patient.sexeP"
                         />
                         <span class="label-text">Féminin</span>

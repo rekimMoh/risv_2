@@ -32,6 +32,8 @@ const currentExam = ref({
 const isEditing = ref(false);
 const editingIndex = ref(-1);
 
+const isLoadingEtudes = ref(false);
+
 // Local list of exams (synced with modelValue potentially, or just local until next)
 const examsList = ref([...props.modelValue]);
 
@@ -64,19 +66,16 @@ onMounted(async () => {
 watch(
     () => currentExam.value.service_id,
     async (newServiceId) => {
-        // If we are editing, we might be setting the service_id, so we shouldn't wipe etude_id immediately if it matches
-        // But for simplicity, we re-fetch.
-        // We need to handle the case where we are populating the form for edit:
-        // When editing, we set service_id, which triggers this watch.
-        // We need to ensure we don't clear etude_id if it's being set programmatically for edit.
-
         // Strategy: Only clear etude_id if it's not already set to what we want (which is hard to know here).
         // Better: Just re-fetch list. If current etude_id is valid for this service, it stays selected.
         // But the select element might clear if the option isn't in the list 'etudes' yet.
         // So we wait for fetch.
 
-        etudes.value = [];
+        // etudes.value = []; // Don't clear immediately to avoid flickering if possible, or just accept flicker.
+        // User wants loading effect.
+
         if (newServiceId) {
+            isLoadingEtudes.value = true;
             try {
                 const response = await axios.get(
                     `/get-etude-by-service/${newServiceId}`
@@ -84,8 +83,12 @@ watch(
                 etudes.value = response.data;
             } catch (error) {
                 console.error("Error loading etudes:", error);
+                etudes.value = [];
+            } finally {
+                isLoadingEtudes.value = false;
             }
         } else {
+            etudes.value = [];
             currentExam.value.etude_id = "";
         }
     }
@@ -108,11 +111,10 @@ const saveExam = () => {
     if (
         !currentExam.value.service_id ||
         !currentExam.value.etude_id ||
-        !currentExam.value.radiologue_id ||
-        !currentExam.value.produit_id
+        !currentExam.value.radiologue_id
     ) {
         alert(
-            "Veuillez remplir tous les champs obligatoires (Service, Étude, Radiologue, Produit)."
+            "Veuillez remplir tous les champs obligatoires (Service, Étude, Radiologue)."
         );
         return;
     }
@@ -265,17 +267,25 @@ const proceed = () => {
 
             <!-- Étude -->
             <div class="form-control">
-                <label class="label"
-                    ><span class="label-text font-semibold"
-                        >Étude *</span
-                    ></label
-                >
+                <label class="label">
+                    <span class="label-text font-semibold">Étude *</span>
+                    <span
+                        v-if="isLoadingEtudes"
+                        class="loading loading-spinner loading-xs text-primary ml-2"
+                    ></span>
+                </label>
                 <select
                     v-model="currentExam.etude_id"
                     class="select select-bordered w-full"
-                    :disabled="!currentExam.service_id"
+                    :disabled="!currentExam.service_id || isLoadingEtudes"
                 >
-                    <option value="" disabled>Sélectionner une étude</option>
+                    <option value="" disabled>
+                        {{
+                            isLoadingEtudes
+                                ? "Chargement..."
+                                : "Sélectionner une étude"
+                        }}
+                    </option>
                     <option
                         v-for="e in etudes"
                         :key="e.IDEtude"
