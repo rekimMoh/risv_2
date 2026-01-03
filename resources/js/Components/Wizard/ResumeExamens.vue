@@ -16,6 +16,7 @@ const emit = defineEmits(["prev", "submit"]);
 
 // Form State for Resume
 const facteurTVA = ref(false);
+const versement = ref(0);
 
 // Formatting Helper
 const formatCurrency = (value) => {
@@ -27,11 +28,22 @@ const formatCurrency = (value) => {
 
 // Calculations
 const totalTarif = computed(() => {
-    return props.exams.reduce((sum, exam) => sum + Number(exam.tarif), 0);
+    return props.exams.reduce((sum, exam) => {
+        // Use tarifInitial (Gross) if available.
+        // Fallback: If old data (only Net 'tarif'), reconstruction is Net + Remise.
+        const gross =
+            exam.tarifInitial !== undefined
+                ? Number(exam.tarifInitial)
+                : Number(exam.tarif) + Number(exam.montantRemise || 0);
+        return sum + gross;
+    }, 0);
 });
 
 const totalRemise = computed(() => {
-    return props.exams.reduce((sum, exam) => sum + Number(exam.remise || 0), 0);
+    return props.exams.reduce(
+        (sum, exam) => sum + Number(exam.montantRemise || 0),
+        0
+    );
 });
 
 const montantBase = computed(() => {
@@ -110,6 +122,10 @@ const totalTTC = computed(() => {
     return montantBase.value + tvaAmount.value;
 });
 
+const resteAPayer = computed(() => {
+    return Math.max(0, totalTTC.value - (Number(versement.value) || 0));
+});
+
 const submit = () => {
     // Prepare payload
     const payload = {
@@ -121,6 +137,8 @@ const submit = () => {
             tva: tvaAmount.value,
             ttc: totalTTC.value,
             facteur: facteurTVA.value,
+            versement: Number(versement.value) || 0,
+            reste: resteAPayer.value,
         },
     };
     emit("submit", payload);
@@ -187,12 +205,28 @@ const submit = () => {
                                     <td>{{ exam.etudeLabel }}</td>
                                     <td>{{ exam.radiologueLabel }}</td>
                                     <td class="text-right font-mono">
-                                        {{ formatCurrency(exam.tarif) }}
+                                        {{
+                                            formatCurrency(
+                                                exam.tarifInitial !== undefined
+                                                    ? exam.tarifInitial
+                                                    : Number(exam.tarif) +
+                                                          Number(
+                                                              exam.montantRemise ||
+                                                                  0
+                                                          )
+                                            )
+                                        }}
                                     </td>
                                     <td
                                         class="text-right font-mono text-red-500"
                                     >
-                                        -{{ formatCurrency(exam.remise) }}
+                                        <span v-if="exam.montantRemise > 0">
+                                            -{{
+                                                formatCurrency(
+                                                    exam.montantRemise
+                                                )
+                                            }}
+                                        </span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -258,6 +292,37 @@ const submit = () => {
                         >
                             <span>Total TTC</span>
                             <span>{{ formatCurrency(totalTTC) }}</span>
+                        </div>
+
+                        <!-- Payment Section -->
+                        <div class="bg-blue-50 p-3 rounded-lg mt-4 space-y-3">
+                            <div class="form-control">
+                                <label class="label p-0 mb-1">
+                                    <span
+                                        class="label-text font-semibold text-blue-900"
+                                        >Versement</span
+                                    >
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        type="number"
+                                        v-model="versement"
+                                        class="input input-sm input-bordered w-full pr-8"
+                                        min="0"
+                                    />
+                                    <span
+                                        class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+                                        >DA</span
+                                    >
+                                </div>
+                            </div>
+
+                            <div
+                                class="flex justify-between items-center text-lg font-bold text-blue-800"
+                            >
+                                <span>Reste à payer</span>
+                                <span>{{ formatCurrency(resteAPayer) }}</span>
+                            </div>
                         </div>
 
                         <div class="card-actions mt-6">

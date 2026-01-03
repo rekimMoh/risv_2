@@ -16,7 +16,6 @@ return new class extends Migration
         Schema::create('examens', function (Blueprint $table) {
             $table->id('IDExamen');
             $table->date('dateEffetExam')->nullable();
-            $table->integer('radiologue_id')->nullable();
             $table->integer('UIExam')->nullable();
             $table->integer('RDVExam')->nullable();
             $table->timestamps();

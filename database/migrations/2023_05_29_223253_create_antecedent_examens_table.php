@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('antecedent_examens', function (Blueprint $table) {
-            $table->id();
+            $table->id('IDEntecedantExamen');
             $table->foreignId('examen_id')->nullable()->constrained('examens')->references('IDExamen');
             $table->foreignId('antecedent_id')->nullable()->constrained('antecedents')->references('IDAntecedent');
             $table->timestamps();

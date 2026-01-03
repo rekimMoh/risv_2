@@ -21,6 +21,14 @@ const isSearching = ref(false);
 
 // Watch for changes and emit update
 watch(
+    () => props.modelValue,
+    (newVal) => {
+        patient.value = newVal;
+    },
+    { deep: true }
+);
+
+watch(
     patient,
     (newVal) => {
         emit("update:modelValue", newVal);
@@ -66,6 +74,7 @@ const searchPatient = async () => {
 
 const selectPatient = (selectedPatient) => {
     // Fill fields
+    patient.value.IDPatient = selectedPatient.IDPatient;
     patient.value.nomP = selectedPatient.nomP;
     patient.value.prenomP = selectedPatient.prenomP;
     patient.value.naisP = selectedPatient.naisP;

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import axios from "axios";
 
 const props = defineProps({
@@ -26,6 +26,8 @@ const currentExam = ref({
     produit_id: "",
     sedation: 0,
     remise: 0,
+    isRemisePourcentage: false,
+    montantRemise: 0,
 });
 
 // Editing State
@@ -38,10 +40,25 @@ const isLoadingEtudes = ref(false);
 const examsList = ref([...props.modelValue]);
 
 // Watchers
+let isUpdatingFromParent = false;
+
+watch(
+    () => props.modelValue,
+    async (newVal) => {
+        isUpdatingFromParent = true;
+        examsList.value = [...newVal];
+        await nextTick();
+        isUpdatingFromParent = false;
+    },
+    { deep: true }
+);
+
 watch(
     examsList,
     (newVal) => {
-        emit("update:modelValue", newVal);
+        if (!isUpdatingFromParent) {
+            emit("update:modelValue", newVal);
+        }
     },
     { deep: true }
 );
@@ -94,15 +111,46 @@ watch(
     }
 );
 
-// Computed Tarif
-const tarif = computed(() => {
+// Computed Base Tarif (Without Discount)
+const baseTarif = computed(() => {
     const prodId = currentExam.value.produit_id;
+    const sedation = currentExam.value.sedation;
+    const etudePrix = etudes.value.find(
+        (e) => e.IDEtude === currentExam.value.etude_id
+    );
     const prod = produits.value.find((p) => p.IDProduit === prodId);
-    if (prod) {
-        // Ensure price is treated as number
-        return Number(prod.prix_afficher) + 500;
+    let total = 0;
+    if (etudePrix) {
+        total += Number(etudePrix.montantPrixExam);
     }
-    return 500; // Fallback if 500 is base
+    if (prod) {
+        total += Number(prod.prix_afficher);
+    }
+    if (sedation) {
+        total += Number(sedation);
+    }
+    return total;
+});
+
+// Calculate Discount Amount
+const calculatedMontantRemise = computed(() => {
+    // Get Etude Price specifically for the percentage base
+    const etudePrixObj = etudes.value.find(
+        (e) => e.IDEtude === currentExam.value.etude_id
+    );
+    const baseEtude = etudePrixObj ? Number(etudePrixObj.montantPrixExam) : 0;
+
+    const remiseVal = Number(currentExam.value.remise) || 0;
+
+    if (currentExam.value.isRemisePourcentage) {
+        return (baseEtude * remiseVal) / 100;
+    }
+    return remiseVal;
+});
+
+// Final Tarif (Net)
+const tarif = computed(() => {
+    return Math.max(0, baseTarif.value - calculatedMontantRemise.value);
 });
 
 // Add or Update Exam
@@ -141,6 +189,8 @@ const saveExam = () => {
         etudeLabel: etude?.libelleEtude, // Assuming libelleEtude
         radiologueLabel: radio ? `${radio.nom} ${radio.prenom}` : "",
         produitLabel: produit?.libelleProduit,
+        montantRemise: calculatedMontantRemise.value, // Persist calculated value
+        tarifInitial: baseTarif.value, // Persist base tariff (Gross)
         id: isEditing.value
             ? examsList.value[editingIndex.value].id
             : Date.now(), // Keep ID if editing
@@ -170,6 +220,8 @@ const editExam = async (index) => {
         produit_id: exam.produit_id,
         sedation: exam.sedation,
         remise: exam.remise,
+        isRemisePourcentage: exam.isRemisePourcentage || false,
+        montantRemise: exam.montantRemise || 0,
     };
 
     // We need to ensure etudes are loaded for this service before setting etude_id
@@ -206,6 +258,8 @@ const resetForm = () => {
         produit_id: "",
         sedation: 0,
         remise: 0,
+        isRemisePourcentage: false,
+        montantRemise: 0,
     };
     isEditing.value = false;
     editingIndex.value = -1;
@@ -231,7 +285,7 @@ const proceed = () => {
             <div class="form-control">
                 <label class="label"
                     ><span class="label-text font-semibold"
-                        >Type de client *</span
+                        >Type de client</span
                     ></label
                 >
                 <select
@@ -247,7 +301,7 @@ const proceed = () => {
             <div class="form-control">
                 <label class="label"
                     ><span class="label-text font-semibold"
-                        >Service *</span
+                        >Service <span class="text-red-500">*</span></span
                     ></label
                 >
                 <select
@@ -268,7 +322,16 @@ const proceed = () => {
             <!-- Étude -->
             <div class="form-control">
                 <label class="label">
-                    <span class="label-text font-semibold">Étude *</span>
+                    <span class="label-text font-semibold"
+                        >Étude
+                        <span
+                            v-if="etudes.length > 0"
+                            class="text-xs"
+                            :style="{ color: etudes[0].colorShift }"
+                            >({{ etudes[0].libelleShift }})</span
+                        >
+                        <span class="text-red-500">*</span></span
+                    >
                     <span
                         v-if="isLoadingEtudes"
                         class="loading loading-spinner loading-xs text-primary ml-2"
@@ -291,7 +354,7 @@ const proceed = () => {
                         :key="e.IDEtude"
                         :value="e.IDEtude"
                     >
-                        {{ e.libelleEtude }}
+                        {{ e.libelleEtude }} ({{ e.montantPrixExam }} DA)
                     </option>
                 </select>
             </div>
@@ -300,7 +363,7 @@ const proceed = () => {
             <div class="form-control">
                 <label class="label"
                     ><span class="label-text font-semibold"
-                        >Radiologue *</span
+                        >Radiologue <span class="text-red-500">*</span></span
                     ></label
                 >
                 <select
@@ -320,8 +383,8 @@ const proceed = () => {
             <div class="form-control">
                 <label class="label"
                     ><span class="label-text font-semibold"
-                        >Produit *</span
-                    ></label
+                        >Produit
+                    </span></label
                 >
                 <select
                     v-model="currentExam.produit_id"
@@ -342,7 +405,7 @@ const proceed = () => {
             <div class="form-control">
                 <label class="label"
                     ><span class="label-text font-semibold"
-                        >Sédation *</span
+                        >Sédation</span
                     ></label
                 >
                 <select
@@ -357,15 +420,65 @@ const proceed = () => {
 
             <!-- Remise -->
             <div class="form-control">
+                <label class="label">
+                    <span class="label-text font-semibold">Remise</span>
+                    <!-- Remise Mode Toggle -->
+                    <div class="flex items-center gap-2 cursor-pointer">
+                        <span
+                            class="label-text-alt"
+                            :class="{
+                                'font-bold text-primary':
+                                    !currentExam.isRemisePourcentage,
+                            }"
+                            >DA</span
+                        >
+                        <input
+                            type="checkbox"
+                            class="toggle toggle-sm toggle-primary"
+                            v-model="currentExam.isRemisePourcentage"
+                        />
+                        <span
+                            class="label-text-alt"
+                            :class="{
+                                'font-bold text-primary':
+                                    currentExam.isRemisePourcentage,
+                            }"
+                            >%</span
+                        >
+                    </div>
+                </label>
+                <div class="relative">
+                    <input
+                        type="number"
+                        v-model="currentExam.remise"
+                        class="input input-bordered w-full pr-10"
+                        min="0"
+                        :placeholder="
+                            currentExam.isRemisePourcentage
+                                ? 'ex: 10'
+                                : 'ex: 1000'
+                        "
+                    />
+                    <span
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold"
+                    >
+                        {{ currentExam.isRemisePourcentage ? "%" : "DA" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Calculated Remise Amount (Only for Percentage) -->
+            <div class="form-control" v-if="currentExam.isRemisePourcentage">
                 <label class="label"
-                    ><span class="label-text font-semibold">Remise</span></label
+                    ><span class="label-text font-semibold"
+                        >Montant Remise</span
+                    ></label
                 >
                 <input
-                    type="number"
-                    v-model="currentExam.remise"
-                    placeholder="0"
-                    class="input input-bordered w-full"
-                    min="0"
+                    type="text"
+                    :value="calculatedMontantRemise + ' DA'"
+                    readonly
+                    class="input input-bordered w-full bg-gray-100"
                 />
             </div>
 
@@ -393,8 +506,10 @@ const proceed = () => {
                 </button>
                 <button
                     @click="saveExam"
-                    class="btn w-full"
-                    :class="isEditing ? 'btn-warning w-2/3' : 'btn-secondary'"
+                    class="btn"
+                    :class="
+                        isEditing ? 'btn-warning w-1/3' : 'btn-secondary w-full'
+                    "
                 >
                     <svg
                         v-if="!isEditing"

@@ -11,6 +11,7 @@ const currentStep = ref(1);
 
 // Global Form State
 const patientData = ref({
+    IDPatient: null,
     nomP: "",
     prenomP: "",
     naisP: "",
@@ -48,24 +49,56 @@ const handleSubmit = (summaryData) => {
     // Add missing fields for PaiementController loop
     form.examens = summaryData.examens.map((exam) => ({
         ...exam,
-        radiologue: exam.radiologue_id, // Controller expects 'radiologue' (ExamenController line 35: $exam['radiologue'])
+        radiologue: exam.radiologue_id, // Controller expects 'radiologue'
         service: exam.service_id, // Controller expects 'service'
         etude: exam.etude_id, // Controller expects 'etude'
         produit: exam.produit_id, // Controller expects 'produit'
-        // tarif, remise are already there
-        calcRemise: 0,
-        typeRemise: "m", // default to montant
+
+        // Tarif: Send Gross Price (tarifInitial). Fallback for safety.
+        tarif:
+            exam.tarifInitial !== undefined
+                ? exam.tarifInitial
+                : Number(exam.tarif) + Number(exam.montantRemise || 0),
+
+        // Remise: The calculated amount in DA
+        remise: exam.montantRemise || 0,
+
+        // CalcRemise: The percentage value (if 'p') or same as remission if 'm' (unused if m)
+        calcRemise: exam.remise || 0,
+
+        typeRemise: exam.isRemisePourcentage ? "p" : "m",
     }));
 
     // Prepare Paiement Payload (for CaisseController::store)
     // Structure: net, tva, ttc, verse, reset
     const p = summaryData.paiement;
     form.paiment = {
-        net: p.total - p.remise, // Montant Base
+        total: p.total,
+        remise: p.remise,
+        net: p.net, // Montant Base (already calculated correctly in ResumeExamens?)
+        // ResumeExamens sends: total, remise, tva, ttc, facteur, versement, reste.
+        // It doesn't allow 'net' explicitly in the generic emission but we can compute or use what's there.
+        // Wait, ResumeExamens logic for 'net' (montantBase) was:
+        // const montantBase = computed(() => totalTarif.value - totalRemise.value);
+        // And submit payload was:
+        /*
+          paiement: {
+            total: totalTarif.value,
+            remise: totalRemise.value,
+            tva: tvaAmount.value,
+            ttc: totalTTC.value,
+            facteur: facteurTVA.value,
+            versement: Number(versement.value) || 0,
+            reste: resteAPayer.value,
+          } 
+        */
+        // So 'net' is not in payload. We calculate it: total - remise.
+
+        net: p.total - p.remise,
         tva: p.tva,
         ttc: p.ttc,
-        verse: 0, // Assuming 0 payment for request
-        reset: p.ttc, // Remaining to pay
+        verse: p.versement, // Map 'versement' to 'verse'
+        reset: p.reste, // Map 'reste' to 'reset'
     };
 
     form.post("/examen", {
@@ -73,10 +106,11 @@ const handleSubmit = (summaryData) => {
             // Reset Wizard
             currentStep.value = 1;
             patientData.value = {
+                IDPatient: null,
                 nomP: "",
                 prenomP: "",
                 naisP: "",
-                sexeP: "H",
+                sexeP: "",
                 telP1: "",
                 wilaya_id: "",
                 antecedents: [],
