@@ -83,7 +83,9 @@ const selectPatient = (selectedPatient) => {
     patient.value.wilaya_id = selectedPatient.wilaya_id;
     // Assuming backend returns antecedents properly, we might need to handle them.
     // However, the search usually returns basic info. We'll leave antecedents manual unless specified.
-
+    patient.value.antecedents = selectedPatient.antecedents.map(
+        (antecedent) => antecedent.IDAntecedent
+    );
     showDropdown.value = false;
 };
 

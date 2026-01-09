@@ -12,8 +12,16 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\PrixExamController;
 use App\Http\Controllers\AntecedentController;
 use App\Http\Controllers\ClasseProduitController;
+use App\Http\Controllers\CompteRenduModelController;
+use App\Http\Controllers\UploadController;
 
 Route::middleware('auth')->group(function () {
+    // CRM Routes
+    Route::post('upload', [UploadController::class, 'upload'])->name('upload');
+    Route::resource('crm', CompteRenduModelController::class);
+    Route::post('crm/toggle', [CompteRenduModelController::class, 'toggleStatus'])->name('crm.toggle');
+    Route::post('crm/{crm}/duplicate', [CompteRenduModelController::class, 'duplicate'])->name('crm.duplicate');
+
     // route USER
     Route::resource('/users', UserController::class);
     Route::post('/active-compte-user', [UserController::class, 'activeCompte'])->name('admin.User.toggle');

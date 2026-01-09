@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AntecedentExamen;
 use App\Models\Caisse;
 use App\Models\Examen;
 use App\Models\Patient;
@@ -22,6 +21,8 @@ class ExamenController extends Controller
             if (! $patient) {
                 // Fallback if ID sent but not found (rare)
                 $patient = PatientController::store($request->patient);
+            } else {
+                PatientController::updatePatient($request->patient);
             }
         }
 
@@ -55,14 +56,6 @@ class ExamenController extends Controller
                 $caisse->IDCaisse
             );
 
-            if (isset($request->patient['antecedents']) && count($request->patient['antecedents']) > 0) {
-                foreach ($request->patient['antecedents'] as $item) {
-                    $antecedantE = new AntecedentExamen;
-                    $antecedantE->antecedent_id = $item;
-                    $antecedantE->examen_id = $examen->IDExamen;
-                    $antecedantE->save();
-                }
-            }
         }
     }
 
@@ -104,6 +97,7 @@ class ExamenController extends Controller
         if ($examens->isNotEmpty()) {
             $patientId = $examens->first()->patient_id;
             $patient = Patient::leftJoin('wilayas', 'wilayas.IDWilaya', 'patients.wilaya_id')
+                ->with('antecedents')
                 ->where('patients.IDPatient', $patientId)
                 ->select('patients.*', 'wilayas.wilaya')
                 ->first();
@@ -123,11 +117,6 @@ class ExamenController extends Controller
         $paiement = \App\Models\Paiement::where('examen_id', $id)->first();
         $caisseId = $paiement ? $paiement->caisse_id : null;
 
-        // Delete dependencies
-        \App\Models\AntecedentExamen::where('examen_id', $id)->delete();
-        if ($paiement) {
-            $paiement->delete();
-        }
         $examen->delete();
 
         // Recalculate Caisse if it exists
@@ -168,33 +157,35 @@ class ExamenController extends Controller
     public function update(Request $request, $id)
     {
         $examen = Examen::find($id);
-        if (!$examen) return response()->json(['error' => 'Not found'], 404);
+        if (! $examen) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
 
         // Update Examen Fields
         $examen->radiologue_id = $request->input('radiologue');
         $examen->etude_id = $request->input('etude');
         $examen->service_id = $request->input('service');
         if ($request->filled('produit')) {
-             $examen->produit_id = $request->input('produit');
+            $examen->produit_id = $request->input('produit');
         } else {
-             $examen->produit_id = null;
+            $examen->produit_id = null;
         }
         $examen->save();
 
         // Update Payment Fields
         $paiement = \App\Models\Paiement::where('examen_id', $id)->first();
         if ($paiement) {
-             // Logic similar to PaiementController::store but updating
-             $paiement->montantantVerserment = $request->input('tarif');
-             $paiement->remiseMontant = $request->input('remise');
-             if ($request->input('typeRemise') == 'p') {
-                 $paiement->remisePourcent = $request->input('calcRemise');
-             } else {
-                 $paiement->remisePourcent = null;
-             }
-             $paiement->save();
-             
-             $this->recalculateCaisse($paiement->caisse_id);
+            // Logic similar to PaiementController::store but updating
+            $paiement->montantantVerserment = $request->input('tarif');
+            $paiement->remiseMontant = $request->input('remise');
+            if ($request->input('typeRemise') == 'p') {
+                $paiement->remisePourcent = $request->input('calcRemise');
+            } else {
+                $paiement->remisePourcent = null;
+            }
+            $paiement->save();
+
+            $this->recalculateCaisse($paiement->caisse_id);
         }
 
         return response()->json(['success' => true]);

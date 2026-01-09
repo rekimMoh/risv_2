@@ -55,6 +55,11 @@ const fetchData = async () => {
         patient.value = response.data.patient || {};
         exams.value = response.data.examens || [];
         caisse.value = response.data.caisse || {};
+        if (patient.value) {
+            patient.value.antecedents = patient.value.antecedents.map(
+                (antecedent) => antecedent.IDAntecedent
+            );
+        }
     } catch (error) {
         console.error("Error fetching detail:", error);
     } finally {

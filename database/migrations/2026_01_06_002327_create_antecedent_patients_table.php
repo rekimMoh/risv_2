@@ -8,14 +8,12 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
-    public function up()
+    public function up(): void
     {
-        Schema::create('antecedent_examens', function (Blueprint $table) {
+        Schema::create('antecedent_patients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('examen_id')->nullable()->constrained('examens')->references('IDExamen');
+            $table->foreignId('patient_id')->nullable()->constrained('patients')->references('IDPatient');
             $table->foreignId('antecedent_id')->nullable()->constrained('antecedents')->references('IDAntecedent');
             $table->timestamps();
         });
@@ -23,11 +21,9 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
-    public function down()
+    public function down(): void
     {
-        Schema::dropIfExists('antecedent_examens');
+        Schema::dropIfExists('antecedent_patients');
     }
 };

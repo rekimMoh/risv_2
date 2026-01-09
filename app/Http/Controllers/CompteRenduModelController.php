@@ -2,109 +2,111 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\CompteRenduModel;
+use App\Models\Etude;
+use App\Models\Service;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CompteRenduModelController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return CompteRenduModel::where(function ($query) {
-            if ($_GET['search'] != '' || $_GET['search'] != null) {
-                $query->where('titreCRM', 'like', '%' . $_GET['search'] . '%');
-            }
-        })
-            ->paginate($_GET['nbItem']);
-    }
+        $query = CompteRenduModel::with('etude.Service'); // Uppercase S as per model method
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        if ($request->search) {
+            $query->where('titreCRM', 'like', '%'.$request->search.'%');
+        }
+
+        return Inertia::render('Admin/crm', [
+            'models' => $query->orderBy('created_at', 'desc')->paginate(10),
+            'services' => fn () => Service::all(),
+            'etudes' => fn () => Etude::all(),
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $CompteRenduModel = new CompteRenduModel();
-        $CompteRenduModel->titreCRM = $request->titreCRM;
-        $CompteRenduModel->contenuCRM = $request->contenuCRM;
-        $CompteRenduModel->UICRM = Auth::user()->id;
-        $CompteRenduModel->etatCRM = 1;
-        $CompteRenduModel->save();
-        return $CompteRenduModel;
-    }
+        $request->validate([
+            'titreCRM' => 'required|string|max:255',
+            'contenuCRM' => 'nullable|string',
+            'etude_id' => 'required|exists:etudes,IDEtude',
+        ]);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
+        CompteRenduModel::create([
+            'titreCRM' => $request->titreCRM,
+            'contenuCRM' => $request->contenuCRM ?? '',
+            'etude_id' => $request->etude_id,
+            'UICRM' => Auth::id(),
+            'etatCRM' => 1,
+        ]);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        return CompteRenduModel::find($id);
+        return redirect()->back();
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
-        $CompteRenduModel = CompteRenduModel::find($id);
-        $CompteRenduModel->titreCRM = $request->titreCRM;
-        $CompteRenduModel->contenuCRM = $request->contenuCRM;
-        $CompteRenduModel->UICRM = Auth::user()->id;
-        $CompteRenduModel->save();
-        return $CompteRenduModel;
-    }
+        $model = CompteRenduModel::findOrFail($id);
 
-    public function activeCRM(Request $request)
-    {
-        $CompteRenduModel = CompteRenduModel::find($request->id);
+        $request->validate([
+            'titreCRM' => 'required|string|max:255',
+            'contenuCRM' => 'nullable|string',
+            'etude_id' => 'required|exists:etudes,IDEtude',
+        ]);
 
-        $CompteRenduModel->etatCRM = $request->etatCRM;
-        $CompteRenduModel->save();
+        $model->update([
+            'titreCRM' => $request->titreCRM,
+            'contenuCRM' => $request->contenuCRM ?? '',
+            'etude_id' => $request->etude_id,
+            'UICRM' => Auth::id(),
+        ]);
+
+        return redirect()->back();
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        CompteRenduModel::where('IDCRM' , $id)->delete();
+        CompteRenduModel::findOrFail($id)->delete();
+
+        return redirect()->back();
+    }
+
+    /**
+     * Duplicate the specified resource.
+     */
+    public function duplicate($id)
+    {
+        $original = CompteRenduModel::findOrFail($id);
+        $new = $original->replicate();
+        $new->titreCRM = $new->titreCRM.' (Copie)';
+        $new->UICRM = Auth::id();
+        $new->save();
+
+        return redirect()->back();
+    }
+
+    /**
+     * Toggle the status of the specified resource.
+     */
+    public function toggleStatus(Request $request)
+    {
+        $model = CompteRenduModel::findOrFail($request->id);
+        $model->etatCRM = $request->etat == 1 ? 1 : 0;
+        $model->save();
+
+        return redirect()->back();
     }
 }

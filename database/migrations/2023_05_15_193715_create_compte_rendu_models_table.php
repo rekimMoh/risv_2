@@ -19,6 +19,7 @@ return new class extends Migration
             $table->text('contenuCRM');
             $table->integer('UICRM');
             $table->integer('etatCRM');
+            $table->foreignId('etude_id')->nullable()->constrained('etudes')->references('IDEtude');
             $table->timestamps();
         });
     }
