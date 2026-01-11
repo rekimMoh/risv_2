@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Caisse;
 use App\Models\Examen;
+use App\Models\Paiement;
 use App\Models\Patient;
+use App\Models\Versement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -114,9 +116,10 @@ class ExamenController extends Controller
         }
 
         // Find related Paiement to get Caisse ID
-        $paiement = \App\Models\Paiement::where('examen_id', $id)->first();
+        $paiement = Paiement::where('examen_id', $id)->first();
         $caisseId = $paiement ? $paiement->caisse_id : null;
 
+        $paiement->delete();
         $examen->delete();
 
         // Recalculate Caisse if it exists
@@ -196,16 +199,22 @@ class ExamenController extends Controller
         $caisse = Caisse::find($caisseId);
         if ($caisse) {
             // Calc Totals
-            $paiements = \App\Models\Paiement::where('caisse_id', $caisseId)->get();
+            $paiements = Paiement::where('caisse_id', $caisseId)->get();
             $totalGross = $paiements->sum('montantantVerserment');
             $totalRemise = $paiements->sum('remiseMontant');
             $net = $totalGross - $totalRemise;
 
             $caisse->net = $net;
-            $caisse->ttc = $net + $caisse->tva; // Kept fixed TVA
+
+            if ($caisse->tva > 0) {
+                $caisse->tva = ($caisse->net * 19) / 100;
+                $caisse->ttc = $caisse->net + $caisse->tva;
+            } else {
+                $caisse->ttc = $caisse->net;
+            }
 
             // Recalc Reset
-            $totalVerse = \App\Models\Versement::where('caisse_id', $caisseId)->sum('versement');
+            $totalVerse = Versement::where('caisse_id', $caisseId)->sum('versement');
             $caisse->verse = $totalVerse;
             $caisse->reset = $caisse->ttc - $totalVerse;
 

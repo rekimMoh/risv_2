@@ -20,35 +20,36 @@
                     </button>
                 </div>
             </div>
-            <div class="p-6">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+            <div class="p-6 overflow-x-auto bg-base-100 rounded-box shadow">
+                <table class="table w-full">
+                    <thead>
                         <tr>
-                            <th class="py-3 px-6">#</th>
-                            <th class="py-3 px-6">Libellé</th>
-                            <th class="py-3 px-6">Etat</th>
-                            <th class="py-3 px-6">Action</th>
+                            <th>#</th>
+                            <th>Libellé</th>
+                            <th>Etat</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr
                             v-for="(Service, index) in Services.data"
                             :key="Services.IDService"
-                            class="hover:bg-gray-100 border-b"
+                            class="hover"
                         >
-                            <td class="py-3 px-6">{{ Service.IDService }}</td>
-                            <td class="py-3 px-6">
+                            <td class="font-bold">{{ Service.IDService }}</td>
+                            <td>
                                 {{ Service.libelleService }}
                             </td>
-                            <td class="py-3 px-6 w-44">
+                            <td class="w-44">
                                 <button
                                     @click="toggleService(index)"
+                                    class="badge cursor-pointer border-none"
                                     :class="{
-                                        'bg-green-500':
+                                        'badge-success text-white':
                                             Service.etatService == 1,
-                                        'bg-red-500': Service.etatService == 0,
+                                        'badge-error text-white':
+                                            Service.etatService == 0,
                                     }"
-                                    class="px-4 py-2 text-white rounded"
                                 >
                                     <span v-if="Service.etatService == 1"
                                         >Désactiver</span
@@ -57,32 +58,35 @@
                                 </button>
                             </td>
 
-                            <td class="py-3 px-6 w-44">
-                                <div class="flex justify-around my-1">
+                            <td class="w-44">
+                                <div class="flex justify-start gap-2">
                                     <button
-                                        class="px-4 py-1 bg-orange-500 hover:bg-orange-400 hover:shadow-lg transition-all text-white rounded-full"
+                                        class="btn btn-sm btn-ghost text-info"
                                         @click="edit(Service)"
+                                        title="Modifier"
                                     >
-                                        <i class="fas fa-edit"></i>
+                                        <i class="fas fa-edit text-lg"></i>
                                     </button>
                                     <button
-                                        class="px-4 py-2 bg-red-600 hover:bg-red-500 hover:shadow-lg transition-all text-white rounded-full"
+                                        class="btn btn-sm btn-ghost text-error"
                                         @click="destroy(Service.IDService)"
+                                        title="Supprimer"
                                     >
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash text-lg"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <Pagination
-                    :links="Services.links"
-                    :from="Services.from"
-                    :to="Services.to"
-                    :total="Services.total"
-                    class="mt-4"
-                />
+                <div class="mt-4">
+                    <Pagination
+                        :links="Services.links"
+                        :from="Services.from"
+                        :to="Services.to"
+                        :total="Services.total"
+                    />
+                </div>
             </div>
         </div>
 

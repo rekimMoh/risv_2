@@ -20,7 +20,7 @@
                         type="text"
                         id="nom"
                         v-model="User.nom"
-                        class="input"
+                        class="input input-bordered w-full"
                     />
                     <span class="text-red-600 text-sm" v-if="errors.nom">{{
                         errors.nom
@@ -36,7 +36,7 @@
                         type="text"
                         id="prenom"
                         v-model="User.prenom"
-                        class="mt-1 input"
+                        class="mt-1 input input-bordered w-full"
                     />
                     <span class="text-red-600 text-sm" v-if="errors.prenom">{{
                         errors.prenom
@@ -52,7 +52,7 @@
                         type="email"
                         id="email"
                         v-model="User.email"
-                        class="mt-1 input"
+                        class="mt-1 input input-bordered w-full"
                     />
                     <span class="text-red-600 text-sm" v-if="errors.email">{{
                         errors.email
@@ -68,7 +68,7 @@
                         id="userMeiter_id"
                         v-model="User.userMeiter_id"
                         @change="User.signature_medcin = null"
-                        class="mt-1 select"
+                        class="mt-1 select select-bordered w-full"
                     >
                         <option
                             v-for="userMeiter in userMeiters"
@@ -94,7 +94,7 @@
                         type="password"
                         id="password"
                         v-model="User.password"
-                        class="mt-1 input"
+                        class="mt-1 input input-bordered w-full"
                     />
                     <span class="text-red-600 text-sm" v-if="errors.password">{{
                         errors.password
@@ -110,7 +110,7 @@
                         type="password"
                         id="password_confirmation"
                         v-model="User.password_confirmation"
-                        class="mt-1 input"
+                        class="mt-1 input input-bordered w-full"
                     />
                     <span
                         class="text-red-600 text-sm"
@@ -127,7 +127,7 @@
                     <select
                         id="medcins"
                         v-model="User.signature_medcin"
-                        class="mt-1 input"
+                        class="mt-1 select select-bordered w-full"
                     >
                         <option :value="null"></option>
                         <option
@@ -148,16 +148,20 @@
                     gestion des Access
                 </h3>
                 <div v-for="l in liens" :key="l.IDLien">
-                    <div class="">
+                    <label
+                        class="cursor-pointer label border rounded-lg p-2 hover:bg-base-200 transition-colors flex justify-between"
+                    >
+                        <span class="label-text font-medium">{{
+                            l.nomUrl
+                        }}</span>
                         <input
                             type="checkbox"
                             :id="l.IDLien"
                             v-model="lienUser"
                             :value="l.IDLien"
-                            :aria-label="l.nomUrl"
-                            class="btn checked:bg-blue-500 checked:border-blue-300 checked:text-white cursor-pointer btn-block"
+                            class="checkbox checkbox-primary"
                         />
-                    </div>
+                    </label>
                 </div>
             </div>
             <hr class="my-6 color-gray-300" />
@@ -166,22 +170,27 @@
                 <div
                     class="text-lg font-medium leading-6 text-gray-400 col-span-4"
                 >
-                    <label for="paieTacheActif">paiement par tâche</label>
-                    <input
-                        type="checkbox"
-                        name=""
-                        id="paieTacheActif"
-                        v-model="paieTacheActif"
-                        :value="
-                            User.mode_paiements &&
-                            User.mode_paiements.length > 0
-                        "
-                        :checked="
-                            User.mode_paiements &&
-                            User.mode_paiements.length > 0
-                        "
-                        class="ml-4 toggle toggle- toggle-lg"
-                    />
+                    <label for="paieTacheActif" class="cursor-pointer label">
+                        <span
+                            class="label-text text-lg font-medium leading-6 text-gray-400"
+                            >paiement par tâche</span
+                        >
+                        <input
+                            type="checkbox"
+                            name=""
+                            id="paieTacheActif"
+                            v-model="paieTacheActif"
+                            :value="
+                                User.mode_paiements &&
+                                User.mode_paiements.length > 0
+                            "
+                            :checked="
+                                User.mode_paiements &&
+                                User.mode_paiements.length > 0
+                            "
+                            class="toggle toggle-primary toggle-lg ml-4"
+                        />
+                    </label>
                 </div>
 
                 <div
@@ -216,7 +225,7 @@
                                     class="w-28 mr-4"
                                 >
                                     <input
-                                        class="input input-sm"
+                                        class="input input-sm input-bordered"
                                         @input="
                                             setValueEtude(
                                                 indexService,
@@ -238,7 +247,7 @@
                                                     service.pourcentageSRV)
                                         )
                                     "
-                                    class="toggle ml-4 toggle-sm toggle-neutral mr-4"
+                                    class="toggle ml-4 toggle-sm toggle-primary mr-4"
                                 />
                                 {{ service.pourcentageSRV ? "%" : "DZD" }}
                             </div>
@@ -280,7 +289,7 @@
                                 >
                                     <input
                                         type="number"
-                                        class="input input-sm"
+                                        class="input input-sm input-bordered"
                                         :placeholder="shift.libelleShift"
                                         v-model="shift.value"
                                     />
@@ -288,7 +297,7 @@
                                 <input
                                     type="checkbox"
                                     v-model="etude.pourcentage"
-                                    class="mx-4 toggle toggle-sm toggle-neutral"
+                                    class="mx-4 toggle toggle-sm toggle-primary"
                                 />
                                 {{ etude.pourcentage ? "%" : "DZD" }}
                             </div>
@@ -297,10 +306,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                <button
-                    type="submit"
-                    class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
+                <button type="submit" class="btn btn-primary w-full">
                     Enregistrer
                 </button>
             </div>

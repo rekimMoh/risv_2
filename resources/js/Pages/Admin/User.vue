@@ -21,73 +21,77 @@
                     </button>
                 </div>
             </div>
-            <div class="p-6">
-                <table class="table table-zebra">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+            <div class="p-6 overflow-x-auto bg-base-100 rounded-box shadow">
+                <table class="table w-full">
+                    <thead>
                         <tr>
-                            <th class="py-3 px-6">#</th>
-                            <th class="py-3 px-6">Nom</th>
-                            <th class="py-3 px-6">Prenom</th>
-                            <th class="py-3 px-6">Post</th>
-                            <th class="py-3 px-6">Etat</th>
-                            <th class="py-3 px-6">Action</th>
+                            <th>#</th>
+                            <th>Nom</th>
+                            <th>Prenom</th>
+                            <th>Post</th>
+                            <th>Etat</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr
                             v-for="(User, index) in Users.data"
                             :key="User.IDUser"
-                            class="hover:bg-gray-100 border-b"
+                            class="hover"
                         >
-                            <td class="py-3 px-6">{{ User.id }}</td>
-                            <td class="py-3 px-6">{{ User.nom }}</td>
-                            <td class="py-3 px-6">{{ User.prenom }}</td>
-                            <td class="py-3 px-6">
+                            <td>{{ User.id }}</td>
+                            <td>{{ User.nom }}</td>
+                            <td>{{ User.prenom }}</td>
+                            <td>
                                 {{ User.user_metier?.typeU || "N/A" }}
                             </td>
-                            <td class="py-3 px-6 w-44">
+                            <td class="w-44">
                                 <button
                                     @click="toggleUser(index)"
+                                    class="badge cursor-pointer border-none"
                                     :class="{
-                                        'btn-success': User.is_active == 1,
-                                        'btn-error': User.is_active == 0,
+                                        'badge-success text-white':
+                                            User.is_active == 1,
+                                        'badge-error text-white':
+                                            User.is_active == 0,
                                     }"
-                                    class="btn px-4 py-2 text-white rounded"
                                 >
                                     <span v-if="User.is_active == 1"
                                         >Désactiver</span
                                     >
                                     <span v-else>Activer</span>
                                 </button>
-                                 
                             </td>
 
-                            <td class="py-3 px-6 w-44">
-                                <div class="flex justify-around my-1">
+                            <td class="w-44">
+                                <div class="flex justify-start gap-2">
                                     <button
-                                        class="btn btn-warning px-4 py-2 rounded-full"
+                                        class="btn btn-sm btn-ghost text-info"
                                         @click="edit(User)"
+                                        title="Modifier"
                                     >
-                                        <i class="fas fa-edit"></i>
+                                        <i class="fas fa-edit text-lg"></i>
                                     </button>
                                     <button
-                                        class="btn btn-error rounded-full"
+                                        class="btn btn-sm btn-ghost text-error"
                                         @click="destroy(User.IDUser)"
+                                        title="Supprimer"
                                     >
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash text-lg"></i>
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <Pagination
-                    :links="Users.links"
-                    :from="Users.from"
-                    :to="Users.to"
-                    :total="Users.total"
-                    class="mt-4"
-                />
+                <div class="mt-4">
+                    <Pagination
+                        :links="Users.links"
+                        :from="Users.from"
+                        :to="Users.to"
+                        :total="Users.total"
+                    />
+                </div>
             </div>
         </div>
 

@@ -24,7 +24,7 @@
                         <input
                             v-model="form.titreCRM"
                             type="text"
-                            class="input block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            class="input input-bordered w-full"
                             required
                         />
                         <div
@@ -43,7 +43,7 @@
                             >
                             <select
                                 v-model="form.service_id"
-                                class="select block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="select select-bordered w-full"
                                 required
                             >
                                 <option value="">Choisir...</option>
@@ -63,7 +63,7 @@
                             >
                             <select
                                 v-model="form.etude_id"
-                                class="select block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="select select-bordered w-full"
                                 :disabled="!form.service_id"
                                 required
                             >

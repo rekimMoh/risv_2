@@ -25,23 +25,23 @@
                 </div>
             </div>
 
-            <div class="p-6 overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+            <div class="p-6 overflow-x-auto bg-base-100 rounded-box shadow">
+                <table class="table w-full">
+                    <thead>
                         <tr>
-                            <th class="py-3 px-6">Index</th>
-                            <th class="py-3 px-6">Titre</th>
-                            <th class="py-3 px-6">Service</th>
-                            <th class="py-3 px-6">Étude</th>
-                            <th class="py-3 px-6">Statut</th>
-                            <th class="py-3 px-6 text-center">Actions</th>
+                            <th>Index</th>
+                            <th>Titre</th>
+                            <th>Service</th>
+                            <th>Étude</th>
+                            <th>Statut</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-if="models.data.length === 0">
                             <td
                                 colspan="6"
-                                class="py-4 text-center text-gray-500"
+                                class="text-center py-4 text-gray-500"
                             >
                                 Aucun modèle trouvé.
                             </td>
@@ -49,59 +49,57 @@
                         <tr
                             v-for="(model, index) in models.data"
                             :key="model.IDCRM"
-                            class="hover:bg-gray-100 border-b transition-colors"
+                            class="hover"
                         >
-                            <td class="py-3 px-6 font-medium text-gray-900">
+                            <td class="font-bold">
                                 {{ index + 1 }}
                             </td>
-                            <td class="py-3 px-6">{{ model.titreCRM }}</td>
-                            <td class="py-3 px-6">
-                                <span
-                                    class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded"
-                                >
+                            <td>{{ model.titreCRM }}</td>
+                            <td>
+                                <div class="badge badge-info gap-2">
                                     {{
                                         model.etude?.service?.libelleService ||
                                         "N/A"
                                     }}
-                                </span>
+                                </div>
                             </td>
-                            <td class="py-3 px-6">
+                            <td>
                                 {{ model.etude?.libelleEtude || "N/A" }}
                             </td>
-                            <td class="py-3 px-6">
+                            <td>
                                 <button
                                     @click="toggleStatus(model)"
+                                    class="badge cursor-pointer"
                                     :class="
                                         model.etatCRM == 1
-                                            ? 'bg-green-500 hover:bg-green-600'
-                                            : 'bg-red-500 hover:bg-red-600'
+                                            ? 'badge-success text-white'
+                                            : 'badge-error text-white'
                                     "
-                                    class="px-3 py-1 text-white rounded-full text-xs font-semibold transition-colors shadow-sm"
                                 >
                                     {{
                                         model.etatCRM == 1 ? "Actif" : "Inactif"
                                     }}
                                 </button>
                             </td>
-                            <td class="py-3 px-6">
-                                <div class="flex justify-center gap-3">
+                            <td>
+                                <div class="flex justify-center gap-2">
                                     <button
                                         @click="edit(model)"
-                                        class="text-blue-600 hover:text-blue-800 hover:bg-blue-100 p-2 rounded-full transition-all"
+                                        class="btn btn-sm btn-ghost text-info"
                                         title="Modifier"
                                     >
                                         <i class="fas fa-edit text-lg"></i>
                                     </button>
                                     <button
                                         @click="duplicate(model)"
-                                        class="text-orange-500 hover:text-orange-700 hover:bg-orange-100 p-2 rounded-full transition-all"
+                                        class="btn btn-sm btn-ghost text-warning"
                                         title="Dupliquer"
                                     >
                                         <i class="fas fa-copy text-lg"></i>
                                     </button>
                                     <button
                                         @click="destroy(model)"
-                                        class="text-red-600 hover:text-red-800 hover:bg-red-100 p-2 rounded-full transition-all"
+                                        class="btn btn-sm btn-ghost text-error"
                                         title="Supprimer"
                                     >
                                         <i class="fas fa-trash text-lg"></i>
@@ -111,14 +109,15 @@
                         </tr>
                     </tbody>
                 </table>
-                <Pagination
-                    v-if="models.data.length > 0"
-                    :links="models.links"
-                    :from="models.from"
-                    :to="models.to"
-                    :total="models.total"
-                    class="mt-4"
-                />
+                <div class="mt-4">
+                    <Pagination
+                        v-if="models.data.length > 0"
+                        :links="models.links"
+                        :from="models.from"
+                        :to="models.to"
+                        :total="models.total"
+                    />
+                </div>
             </div>
         </div>
 
